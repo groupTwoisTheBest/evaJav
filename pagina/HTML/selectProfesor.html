@@ -4,29 +4,27 @@
     <meta charset="UTF-8">
     <link rel="icon" href="../Imgs/icon.jpeg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../CSS/stylesheet_page2.css">
+    <link rel="stylesheet" href="../CSS/gobla.css">
     <title>¿A quién vas a evaluar?</title>
 </head>
 <body>
-    <div class="calification_opcion">
+    <form class="calification_opcion">
         <h2 class="title">
             David Gomez Arteaga
         </h2>
-        <div>
-            <label>¿A quién quieres evaluar?</label>
-            <form id="Selectormestro">
-                <select id="maestro" name="maestro">
-                    <option value="">Elige a un maestro</option>
-                    <option value="Lenny">Lenny</option>    
-                    <option value="Erika">Erika</option>
-                    <option value="Fredy">Freddy</option>
-                </select>
-                <div>
-                    <input type="submit" class="to-go-calification_plataform" value="Continuar ">
-                </div>
-            </form>
-        </div>
-    </div>
+        
+            
+        <label for="Selectormestro" id="Selectormestro">¿A quién quieres evaluar?</label>
+            <select id="maestro" name="maestro">
+                <option value="OptionMaestro">Elige a un maestro</option>
+                <option value="Lenny">Lenny</option>    
+                <option value="Erika">Erika</option>
+                <option value="Fredy">Freddy</option>
+            </select>
+                
+        <input type="submit" class="to-go-calification_plataform" value="Continuar ">
+                 
+    </form>
 
 <script>
     // Escucha el evento "submit" del formulario con id "Selectormestro"

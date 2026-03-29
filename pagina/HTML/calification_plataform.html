@@ -4,15 +4,16 @@
     <meta charset="UTF-8">
     <link rel="icon" href="../Imgs/icon.jpeg">
     <meta name="viewport" content="width=device-width, initial-scale=0.5">
-    <link rel="stylesheet" href="../CSS/calificacion.css">
+    <link rel="stylesheet" href="../CSS/gobla.css">
     <title>¿A quién quieres evaluar?</title>
 </head>
 <body>
-    <div class="calification_opcion">
-        <h2 id="Selectormestro"></h2>
-        <h2 class="track">Explicación del tema</h2>
+    <form class="calification_opcion">
+        <fieldset>
+        <legend id="Selectormestro"></legend>
+        <label class="track" for="explicationsTopics">Explicación del tema</label>
         
-            <select>
+            <select id="explicationsTopics">
                 <option value="">Nota</option>
                 <option value="Malo">Malo</option>
                 <option value="Regular">Regular</option>    
@@ -21,12 +22,11 @@
             </select>
             
         
-        <h2 class="track">
-        Actitudinal   
-        </h2>
+        <label class="track" for="actitudinal">Actitudinal </label>  
         
         
-            <select>
+        
+            <select id="actitudinal">
                 <option value="">Nota</option>
                 <option value="Malo">Malo</option>
                 <option value="Regular">Regular</option>    
@@ -36,11 +36,11 @@
             
         
 
-        <h2 class="track">
+        <label for="classActivity" class="track">
         Actividades de clase
         </h2>
         
-            <select>
+            <select id="classActivity">
                 <option value="">Nota</option>
                 <option value="Malo">Malo</option>
                 <option value="Regular">Regular</option>    
@@ -51,8 +51,8 @@
         <a href="certificado.html">
         <input type="submit" class="to-go-calification_plataform">
         </a>
-
-        </div>
+            </fieldset>
+    </form>
         
     <script>
     // Obtiene desde localStorage el nombre del maestro que fue seleccionado previamente

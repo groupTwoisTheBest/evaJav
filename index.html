@@ -4,21 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="pagina/Imgs/icon.jpeg">
-    <link rel="stylesheet" href="pagina/CSS/index.css">
-    <link rel="stylesheet" href="pagina/CSS/index2.css">
+    <link rel="stylesheet" href="pagina/CSS/gobla.css">
+    <link rel="stylesheet" href="pagina/CSS/gobla.css">
     <title> Evalua Javiera</title>
 </head>
 <body>
 
 
-    <fieldset>
-    <h2>Evalua</h2>
+    <form>
+            <fieldset>
+                <legend>EVAJ</legend>
+            
+            <label for="username">Usuario</label>
+            <input id="username" type="text" placeholder="Documento">
+            <label for="password">Contraseña<label>
+            <input id="password" type="password" placeholder="Contraseña">
+            <button onclick="login()">Ingresar</button>
+            </fieldset>
+    </form>
 
-    <input id="username" type="text" placeholder="Documento">
-
-    <input id="password" type="password" placeholder="Contraseña">
-    <button onclick="login()">Ingresar</button>
-    </fieldset>
+    
 
 
 <script>

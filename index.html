@@ -5,47 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="pagina/Imgs/icon.jpeg">
     <link rel="stylesheet" href="pagina/CSS/gobla.css">
-    <link rel="stylesheet" href="pagina/CSS/gobla.css">
     <title> Evalua Javiera</title>
 </head>
 <body>
 
 
     <form>
-            <fieldset>
-                <legend>EVAJ</legend>
+        <legend>EVAJ</legend>
             
             <label for="username">Usuario</label>
             <input id="username" type="text" placeholder="Documento">
             <label for="password">Contraseña<label>
             <input id="password" type="password" placeholder="Contraseña">
             <button onclick="login()">Ingresar</button>
-            </fieldset>
+
     </form>
 
     
 
 
-<script>
-const users = [
-        { username: "1025657849", password: "MJAVIERA", redirect: "pagina/HTML/selectProfesor.html" },
-        { username: "1025657456", password: "MJAVIERA", redirect: "pagina/HTML/selectProfesor.html" },
-        { username: "1020113554", password: "MJAVIERA", redirect: "pagina/HTML/selectProfesor.html" }
-]
-    function login() {
-        const user = document.getElementById("username").value;
-        const pass = document.getElementById("password").value;
+<script src="pagina/javascript/index.js"></script>
 
-        const found = users.find(u => u.username === user && u.password === pass);
 
-    if (found) {
-            window.location.href = found.redirect;
-        } 
-        else {
-        alert("Usuario o contraseña incorrectos.");
-        }
-    }
-</script>
 
 </body>
 </html>

@@ -3,7 +3,8 @@ const users = [
         { username: "1025657456", password: "MJAVIERA", redirect: "pagina/HTML/selectProfesor.html" },
         { username: "1020113554", password: "MJAVIERA", redirect: "pagina/HTML/selectProfesor.html" }
 ]
-    function login() {
+    function login(event) {
+        event.preventDefault();
         const user = document.getElementById("username").value;
         const pass = document.getElementById("password").value;
 

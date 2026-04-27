@@ -5,13 +5,14 @@
     <link rel="icon" href="../Imgs/icon.jpeg">
     <meta name="viewport" content="width=device-width, initial-scale=0.5">
     <link rel="stylesheet" href="../CSS/gobla.css">
+    <script src="../javascript/cal_plataform.js" defer></script>
     <title>¿A quién quieres evaluar?</title>
 </head>
 <body>
-    <form class="calification_opcion">
-        <fieldset>
+    <form id="calification">
+        
         <legend id="Selectormestro"></legend>
-        <label class="track" for="explicationsTopics">Explicación del tema</label>
+        <label for="explicationsTopics">Explicación del tema</label>
         
             <select id="explicationsTopics">
                 <option value="">Nota</option>
@@ -38,7 +39,8 @@
 
         <label for="classActivity" class="track">
         Actividades de clase
-        </h2>
+        </label>
+        
         
             <select id="classActivity">
                 <option value="">Nota</option>
@@ -48,43 +50,12 @@
                 <option value="Excelente">Excelente</option>
             </select>
             
-        <a href="certificado.html">
-        <input type="submit" class="to-go-calification_plataform">
-        </a>
-            </fieldset>
+    <button type="submit">Enviar</button>
+    
     </form>
+
         
-    <script>
-    // Obtiene desde localStorage el nombre del maestro que fue seleccionado previamente
-        const maestroSeleccionado = localStorage.getItem('maestroSeleccionado');
+        
 
-    // Muestra en pantalla el texto "Evaluando a: [maestro]"
-    // Insertándolo dentro del elemento con id "Selectormestro"
-        document.getElementById('Selectormestro').textContent = `Evaluando a: ${maestroSeleccionado}`;
-
-        // Escucha el evento "submit" del formulario con id "calification"
-        document.getElementById('calification').addEventListener('submit', function(event) {
-
-        // Evita que el formulario recargue la página automáticamente
-        event.preventDefault();
-
-        // Obtiene la calificación seleccionada por el usuario
-        const maestro = document.getElementById('maestro').value;
-
-        // Si el usuario seleccionó una calificación...
-        if (maestro) {
-
-            // Guarda la calificación en localStorage
-            localStorage.setItem('calification', maestro);
-
-            // Redirige nuevamente a la plataforma de calificación
-            window.location.href = 'calification_plataform.html';
-        } else {
-
-            // Si no seleccionó nada, muestra un mensaje de alerta
-            alert('Por favor, selecciona una nota para cada casilla.');
-        }
-    });
-</script>
 </body>
 </html>

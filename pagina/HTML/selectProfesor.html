@@ -5,49 +5,29 @@
     <link rel="icon" href="../Imgs/icon.jpeg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../CSS/gobla.css">
+    <script src="../javascript/sele_prof.js" defer ></script>
+    <!--el defer es para que se ejecute solo cuando el HTML este completamente cargado -->
     <title>¿A quién vas a evaluar?</title>
 </head>
 <body>
-    <form class="calification_opcion">
-        <h2 class="title">
+    <form id="Selectormestro">
+        <legend>
             David Gomez Arteaga
-        </h2>
+        </legend>
         
             
-        <label for="Selectormestro" id="Selectormestro">¿A quién quieres evaluar?</label>
+        <label for="maestro" >¿A quién quieres evaluar?</label>
             <select id="maestro" name="maestro">
-                <option value="OptionMaestro">Elige a un maestro</option>
+                <option value="">Elige a un maestro</option>
                 <option value="Lenny">Lenny</option>    
                 <option value="Erika">Erika</option>
                 <option value="Fredy">Freddy</option>
             </select>
                 
-        <input type="submit" class="to-go-calification_plataform" value="Continuar ">
+        <button type="submit" >seguir</button>
                  
     </form>
+</body>
+</html>
 
-<script>
-    // Escucha el evento "submit" del formulario con id "Selectormestro"
-    document.getElementById('Selectormestro').addEventListener('submit', function(event) {
 
-        // Evita que el formulario recargue la página automáticamente
-        event.preventDefault();
-
-        // Obtiene el valor seleccionado del elemento con id "maestro"
-        const maestro = document.getElementById('maestro').value;
-
-        // Si el usuario seleccionó un maestro...
-        if (maestro) {
-
-            // Guarda el maestro elegido en el almacenamiento local del navegador
-            localStorage.setItem('maestroSeleccionado', maestro);
-
-            // Redirige a la siguiente página
-            window.location.href = 'calification_plataform.html';
-        } else {
-
-            // Si no seleccionó nada, muestra un mensaje de alerta
-            alert('Por favor, selecciona un maestro');
-        }
-    });
-</script>

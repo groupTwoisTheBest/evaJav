@@ -2,7 +2,7 @@
     --fondo: #222222;
     --texto: #f2f2f2;
     --border: 3px solid #3B4B6A;
-    --BorderShadow: 0 0 15px rgba(0, 0, 0, 0.4);
+    --BorderShadow: 0 0 7px rgb(75, 131, 177);
 }
 
 * {
@@ -47,9 +47,8 @@ legend {
 
 button {
     width: 40vw;
-    height: 5vh;
+    height: 7vh;
     margin: 10px;
-    box-shadow: var(--BorderShadow);
     background-color:#385288;
 }
 
@@ -57,4 +56,33 @@ select{
     text-align: center;
     width: 80vw;
     height: 5vh;
+}
+
+@media (min-width: 800px) {
+
+
+*{
+    margin: 0;
+    }
+form {
+    gap: 8px;
+}
+button{
+    width: 20vw;
+}
+
+legend{
+    font-size: 7vw;
+    margin-bottom: 25px;
+}
+
+label{
+    font-size: 2em ;
+}
+
+input{
+    width: 30vw;
+    height: 6vh;
+}
+
 }

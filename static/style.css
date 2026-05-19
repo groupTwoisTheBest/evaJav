@@ -72,17 +72,26 @@ button{
 }
 
 legend{
-    font-size: 7vw;
+    font-size: 3vw;
     margin-bottom: 25px;
 }
 
 label{
     font-size: 2em ;
 }
-
+select{
+    width: 30%;
+}
 input{
     width: 30vw;
     height: 6vh;
 }
-
+a{
+    text-decoration: none;
 }
+}
+
+form{
+    border-color: #fff;
+}
+

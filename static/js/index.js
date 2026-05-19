@@ -1,7 +1,7 @@
 const users = [
-        { username: "1025657849", password: "MJAVIERA", redirect: "pagina/HTML/selectProfesor.html" },
-        { username: "1025657456", password: "MJAVIERA", redirect: "pagina/HTML/selectProfesor.html" },
-        { username: "1020113554", password: "MJAVIERA", redirect: "pagina/HTML/selectProfesor.html" }
+        { username: "1025657849", password: "MJAVIERA", redirect: "/seleccionatuprofesor" },
+        { username: "1025657456", password: "MJAVIERA", redirect: "/seleccionatuprofesor" },
+        { username: "1020113554", password: "MJAVIERA", redirect: "/seleccionatuprofesor" }
 ]
     function login(event) {
         event.preventDefault();

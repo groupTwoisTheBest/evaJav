@@ -23,7 +23,7 @@ const cls = document.getElementById('classActivity').value;
             localStorage.setItem('calification', JSON.stringify({ exp, act, cls}));
 
             // Redirige nuevamente a la pagina de gracias
-            window.location.href = 'certificado.html';
+            window.location.href = '/Agradecimiento';
         } else {
 
             // Si no seleccionó nada, muestra un mensaje de alerta

@@ -1,15 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <link rel="icon" href="../Imgs/icon.jpeg">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../CSS/gobla.css">
-    <script src="../javascript/sele_prof.js" defer ></script>
-    <!--el defer es para que se ejecute solo cuando el HTML este completamente cargado -->
-    <title>¿A quién vas a evaluar?</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}¿A quién vas a evaluar?{% endblock %}
+
+{% block content %}
+
+
     <form id="Selectormestro">
         <legend>
             David Gomez Arteaga
@@ -26,8 +20,6 @@
                 
         <button type="submit" >seguir</button>
                  
-    </form>
-</body>
-</html>
+{% endblock %}
 
 

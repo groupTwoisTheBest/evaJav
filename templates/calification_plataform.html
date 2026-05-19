@@ -1,14 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <link rel="icon" href="../Imgs/icon.jpeg">
-    <meta name="viewport" content="width=device-width, initial-scale=0.5">
-    <link rel="stylesheet" href="../CSS/gobla.css">
-    <script src="../javascript/cal_plataform.js" defer></script>
-    <title>¿A quién quieres evaluar?</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %} ¿A quién quieres evaluar? {% endblock %}
+
+{% block content %}
+
     <form id="calification">
         
         <legend id="Selectormestro"></legend>
@@ -54,8 +48,4 @@
     
     </form>
 
-        
-        
-
-</body>
-</html>
+{% endblock %}

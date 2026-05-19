@@ -16,7 +16,7 @@
             localStorage.setItem('maestroSeleccionado', maestro);
 
             // Redirige a la siguiente página
-            window.location.href = '../HTML/calification_plataform.html';
+            window.location.href = '/calificaElProfesor';
         } else {
 
             // Si no seleccionó nada, muestra un mensaje de alerta

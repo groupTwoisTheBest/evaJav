@@ -61,46 +61,30 @@ select{
 @media (min-width: 800px) {
 
 
-
-body{
-    display: flex;
-    align-items: center;
-    margin: 20vh;
+*{
+    margin: 0;
+    }
+form {
+    gap: 8px;
 }
-
 button{
     width: 20vw;
 }
 
 legend{
-    font-size: 3vw;
+    font-size: 7vw;
     margin-bottom: 25px;
 }
 
-#calification{
-    width: 60vw;
-    height: 59vh;
-
-}
 label{
-    font-size:  1.5vw;
+    font-size: 2em ;
 }
-select{
-    width: 60%;
-}
+
 input{
     width: 30vw;
     height: 6vh;
 }
-a{
-    text-decoration: none;
-}
-}
 
-form{
-    border:1px solid #fff;
-    gap: 8px;
-    width: 40vw;
-    height: 50vh;
-}
 
+
+}

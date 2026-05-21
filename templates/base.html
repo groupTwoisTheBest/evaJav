@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {% block stylesheets %}<link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">{% endblock %}
+    <link rel="stylesheet" {% block stylesheets %} href="{{ url_for('static', path='style.css') }}" {% endblock %}>
     <script src="{{ linkJs.src }}" defer></script>
+    <link rel="icon" href="{{ url_for('static', path='favicon.png') }}" type="image/x-icon">
     <title> {% block title %} EvaJav {% endblock %}</title>
 </head>
 <body>

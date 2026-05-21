@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% block title %}Evalua Javiera{% endblock %}
-{% block stylesheets %} href="{{ url_for('static', path='index.css') }}" {% endblock %}
+{% block stylesheets %}
+<link rel="stylesheet" href="{{ url_for('static', path='index.css') }}">
+{% endblock %}
 {% block content %}
 
     <form onsubmit="login(event)">

@@ -20,10 +20,16 @@ async def read_root(request: Request):
 @app.get("/seleccionatuprofesor", response_class=HTMLResponse)
 async def read_seleccionatuprofesor(request: Request,):
     return templates.TemplateResponse(request=request, name="selectProfesor.html", context={"linkJs": LinkJS[1]})
+    
+@app.get("/configuracion", response_class=HTMLResponse)
+async def configuracion(request: Request,):
+    return templates.TemplateResponse(request=request, name="configuracion.html", context={"linkJs": LinkJS[0]})
 
 @app.get("/calificaElProfesor", response_class=HTMLResponse)
 async def read_calificaElProfesor(request: Request):
     return templates.TemplateResponse(request=request, name="calification_plataform.html", context={"linkJs": LinkJS[2]})
+
 @app.get("/Agradecimiento", response_class=HTMLResponse)
 async def read_agradecimiento(request: Request):
     return templates.TemplateResponse(request=request, name="certificado.html", context={"linkJs": LinkJS[0]})
+

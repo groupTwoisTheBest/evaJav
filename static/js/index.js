@@ -15,6 +15,6 @@ const users = [
             window.location.href = found.redirect;
         } 
         else {
-        alert("Usuario o contraseña incorrectos.pendejo");
+        alert("Usuario o contraseña incorrectos.");
         }
     }

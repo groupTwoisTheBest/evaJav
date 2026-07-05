@@ -1,20 +1,25 @@
-const users = [
-        { username: "1025657849", password: "MJAVIERA", redirect: "/seleccionatuprofesor" },
-        { username: "1025657456", password: "MJAVIERA", redirect: "/seleccionatuprofesor" },
-        { username: "1020113554", password: "MJAVIERA", redirect: "/seleccionatuprofesor" },
-        { username: "fabioman", password: "MJAVIERA", redirect: "/configuracion" },
-]
-    function login(event) {
-        event.preventDefault();
-        const user = document.getElementById("username").value;
-        const pass = document.getElementById("password").value;
+from fastapi import FastAPI, Request, Form, status
+from fastapi.responses import RedirectResponse, PlainTextResponse, HTMLResponse
+from fastapi.templating import Jinja2Templates
 
-        const found = users.find(u => u.username === user && u.password === pass);
 
-    if (found) {
-            window.location.href = found.redirect;
-        } 
-        else {
-        alert("Usuario o contraseña incorrectos.pendejo");
-        }
-    }
+app = FastAPI()
+templates = Jinja2Templates(directory="templates")
+
+# Ruta que procesa el formulario mediante método POST
+@app.post("../app/index.py")
+async def login(username: str = Form(...), password: str = Form(...)):
+
+    # 1. Tu validación original (FastAPI ya capturó los datos en las variables)
+    if username == "1234" and password == "M":
+
+        # 2. Redireccionar a la segunda parte
+        # El estado 303 es clave para redireccionar de un POST a un GET de forma segura
+        return RedirectResponse(url="/seleccionatuprofesor", status_code=status.HTTP_303_SEE_OTHER)
+    else:
+        return PlainTextResponse("Usuario o contraseña incorrectos", status_code=401)
+
+# Ruta de destino (part 2)
+@app.get("/seleccionatuprofesor", response_class=HTMLResponse)
+async def read_seleccionatuprofesor(request: Request,):
+    return templates.TemplateResponse(request=request, name="selectProfesor.html", context={})

@@ -1,0 +1,17 @@
+{% extends "baseAdministrador.html" %}
+{% block title %} elige el Profesor {% endblock %}
+
+{% block content %}
+
+<div>
+        <label for="gestionProfesores">Gestionar Profesores</label>
+        <select id="gestionProfesores" name="gestionProfesores">
+            <option value="">Elige un profesor</option>
+            <option value="Lenny">Lenny</option>
+            <option value="Erika">Erika</option>
+            <option value="Fredy">Freddy</option>
+            <button type="submit">seguir</button>
+        </select>
+</div>
+
+{% endblock %}

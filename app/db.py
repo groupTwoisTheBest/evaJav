@@ -31,7 +31,7 @@ def init_db():
                 """
                 CREATE TABLE IF NOT EXISTS maestro (
                     id SERIAL PRIMARY KEY,
-                    nota TEXT OR NULL,
+                    nota TEXT NOT NULL,
                     name TEXT NOT NULL,
                     grado TEXT NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

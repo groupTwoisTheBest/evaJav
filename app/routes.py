@@ -1,29 +1,37 @@
-from fastapi import FastAPI, Request
+"""routes.py"""
+
+from fastapi import Request, APIRouter
 from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from app import verificac
 
 
-app = FastAPI()
+router = APIRouter()
 templates = Jinja2Templates(directory="templates")
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
-@app.get("/", response_class=HTMLResponse)
-async def read_root(request: Request):
-    return templates.TemplateResponse(request=request, name="index.html", context={})
 
-@app.get("/seleccionatuprofesor", response_class=HTMLResponse)
-async def read_seleccionatuprofesor(request: Request,):
-    return templates.TemplateResponse(request=request, name="selectProfesor.html", context={})
+def render(request: Request, template: str, **ctx) -> HTMLResponse:
+
+    return templates.TemplateResponse(
+        request=request, name=template, context={**ctx}
+    )
+
+@router.get("/")
+async def read_root(request: Request) -> HTMLResponse:
+    return render(request,"index.html")
+
+@router.get("/seleccionatuprofesor")
+async def read_seleccionatuprofesor(request: Request,) -> HTMLResponse:
+    return render(request,"selectProfesor.html")
     
-@app.get("/configuracion", response_class=HTMLResponse)
-async def configuracion(request: Request,):
-    return templates.TemplateResponse(request=request, name="configuracion.html", context={})
+@router.get("/configuracion")
+async def configuracion(request: Request,)->HTMLResponse:
+    return render(request,"configuracion.html")
 
-@app.get("/calificaElProfesor", response_class=HTMLResponse)
-async def read_calificaElProfesor(request: Request):
-    return templates.TemplateResponse(request=request, name="calification_plataform.html", context={})
+@router.get("/calificaElProfesor")
+async def read_calificaElProfesor(request: Request) -> HTMLResponse:
+    return render(request,"calification_plataform.html")
 
-@app.get("/Agradecimiento", response_class=HTMLResponse)
-async def read_agradecimiento(request: Request):
-    return templates.TemplateResponse(request=request, name="certificado.html", context={})
+@router.get("/Agradecimiento", response_class=HTMLResponse)
+async def read_agradecimiento(request: Request)-> HTMLResponse:
+    return render(request,"certificado.html")

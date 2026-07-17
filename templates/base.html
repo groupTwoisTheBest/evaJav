@@ -6,7 +6,7 @@
     {% block stylesheets %}
 <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
 {% endblock %}
-    <script src="{{ linkJs.src }}" defer></script>
+  {% block script %} {% endblock %}
     <link rel="icon" href="{{ url_for('static', path='favicon.png') }}" type="image/x-icon">
     <title> {% block title %} EvaJav {% endblock %}</title>
 </head>

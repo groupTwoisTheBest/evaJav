@@ -19,7 +19,6 @@ async def login(username: str = Form(...), password: str = Form(...)):
     else:
         return PlainTextResponse("Usuario o contraseña incorrectos", status_code=401)
 
-# Ruta de destino (part 2)
 @app.get("/seleccionatuprofesor", response_class=HTMLResponse)
 async def read_seleccionatuprofesor(request: Request,):
     return templates.TemplateResponse(request=request, name="selectProfesor.html", context={})

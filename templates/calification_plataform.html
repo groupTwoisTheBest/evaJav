@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %} ¿A quién quieres evaluar? {% endblock %}
-
+{% block script %} <script src="../static/js/cal_plataform.js" defer></script> {% endblock script %}
 {% block content %}
 
     <form id="calification">
@@ -31,9 +31,7 @@
             
         
 
-        <label for="classActivity" class="track">
-        Actividades de clase
-        </label>
+        <label for="classActivity" class="track">Actividades de clase</label>
         
         
             <select id="classActivity">

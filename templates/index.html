@@ -5,14 +5,14 @@
 {% endblock %}
 {% block content %}
 
-    <form action="../app/index.py" method="post">
+    <form action="/verificar_usuario" method="post">
 
         <legend>EVAJ</legend>
             
             <label for="username">Usuario</label>
-            <input id="username" type="text" placeholder="Documento">
+            <input id="{{username}}" type="text" placeholder="Documento" required>
             <label for="password">Contraseña</label>
-            <input id="password" type="password" placeholder="Contraseña">
+            <input id="{{password}}" type="password" placeholder="Contraseña" required>
             <button>Ingresar</button>
 
     </form>

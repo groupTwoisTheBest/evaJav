@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 {% block title %}¿A quién vas a evaluar?{% endblock %}
-
+{% block script %} <script src="../static/js/sele_prof.js" defer></script> {% endblock script %}
 {% block content %}
 
-
-
     <form id="Selectormestro">
+
         <legend>
             David Gomez Arteaga
         </legend>
         
             
         <label for="maestro" >¿A quién quieres evaluar?</label>
+
             <select id="maestro" name="maestro">
                 <option value="">Elige a un maestro</option>
                 <option value="Lenny">Lenny</option>    

@@ -1,7 +1,7 @@
 -- Nombres y Apellidos
 SELECT *
 FROM "BD"
-WHERE "Estudiante_id" IN (
+WHERE "id_estudiante" IN (
     SELECT "id"
     FROM "Estudiante"
     WHERE "Nombre" = 'Jony'
@@ -20,14 +20,14 @@ WHERE "problema_id" = (
 INSERT INTO "Estudiante" ("Nombre", "Apellido", "D_Identidad")
 VALUES ('Jony', 'Hernandez', '1032013457');
 
--- Agregar un nuevo Profesor
-INSERT INTO "Profesor" ("Nombre", "Apellido")
+-- Agregar un nuevo maestro 
+INSERT INTO "maestro" ("Nombre", "Apellido")
 VALUES ('Jovanny', 'Velez');
 
 -- Eliminar un estudiante
-DELETE FROM "Estudiante"
+DELETE FROM "id_estudiante"
 WHERE "Nombre" = 'Jony'
 AND "id" NOT IN (
-    SELECT DISTINCT "Estudiante_id" 
+    SELECT DISTINCT "id_estudiante" 
     FROM "BD"
 );

@@ -1,21 +1,25 @@
 {% extends "base.html" %}
 {% block title %}Evalua Javiera{% endblock %}
+{% block stylesheets %}
+<link rel="stylesheet" href="{{ url_for('static', path='index.css') }}">
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', path='js/index.js') }}"></script>
+{% endblock %}
 
 {% block content %}
 
-    <main class="wrap narrow">
-        <form class="card" action="/login" method="post">
+    <form action="/login" method="post">
 
-            <legend class="kicker">EVAJ</legend>
+        <legend>EVAJ</legend>
             
             <label for="username">Usuario</label>
-            <input class="input" id="username" name="username" type="text" placeholder="Documento" required>
+            <input id="username" name="username" type="text" placeholder="Documento" requiered>
             <label for="password">Contraseña</label>
-            <input class="input" id="password" name="password" type="password" placeholder="Contraseña" required>
-            <button class="btn" type="submit">Ingresar</button>
+            <input id="password" name="password" type="password" placeholder="Contraseña" required> 
+            <button>Ingresar</button>
 
-        </form>
-    </main>
+    </form>
  
 {% endblock %}
 

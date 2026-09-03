@@ -1,455 +1,162 @@
-/* Evaluación Docente — sistema visual único.
-   Estética: paneles oscuros tipo Supabase + acentos monoespaciados (hacker)
-   + relieve neumórfico suave en azul. Todo el color sale de :root. */
-
 :root {
-  --bg: #080b11;
-  --bg-2: #0b0f17;
-  --panel: #10151f;
-  --panel-2: #141a26;
-  --line: #1e2636;
-  --line-2: #2a3448;
-  --text: #e6edf9;
-  --muted: #7f8da6;
-  --accent: #3b82f6;
-  --accent-2: #22d3ee;
-  --accent-soft: rgb(59 130 246 / 0.14);
-  --ok: #22c55e;
-  --warn: #f59e0b;
-  --danger: #f2555a;
-  --radius: 14px;
-  --mono: ui-monospace, "JetBrains Mono", "Cascadia Code", Consolas, monospace;
-  --sans: "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
-  /* Relieve neumórfico: sombra baja oscura + luz alta fría */
-  --relieve: 8px 8px 20px rgb(3 5 9 / 0.85), -6px -6px 18px rgb(30 40 60 / 0.35);
-  --hundido: inset 4px 4px 10px rgb(3 5 9 / 0.9), inset -3px -3px 9px rgb(30 40 60 / 0.28);
-  --ring: 0 0 0 3px rgb(59 130 246 / 0.35);
+    --fondo: #222222;
+    --texto: #f2f2f2;
+    --border: 3px solid #3B4B6A;
+    --BorderShadow: 0 0 7px rgb(75, 131, 177);
 }
-
-* { box-sizing: border-box; }
 
 body {
-  margin: 0;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  font-family: var(--sans);
-  font-size: 15.5px;
-  line-height: 1.6;
-  color: var(--text);
-  background-color: var(--bg);
-  background-image: none;
-  background-size: 44px 44px, 44px 44px, auto, auto;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: var(--fondo);
+    color: var(--texto);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
-h1, h2, h3, h4 { margin: 0 0 0.4rem; line-height: 1.25; font-weight: 650; letter-spacing: -0.01em; }
-h1 { font-size: clamp(1.6rem, 4vw, 2.1rem); }
-h2 { font-size: clamp(1.25rem, 3vw, 1.6rem); }
-h3 { font-size: 1.1rem; }
-h4 { font-size: 0.98rem; }
-p { margin: 0 0 1rem; }
-a { color: var(--accent); text-decoration: none; }
-a:hover { color: var(--accent-2); }
-code, .mono { font-family: var(--mono); font-size: 0.88em; }
-
-.muted { color: var(--muted); }
-.center { text-align: center; }
-.small { font-size: 0.88rem; }
-.mt { margin-top: 1.5rem; }
-.mb-0 { margin-bottom: 0; }
-
-/* Etiquetas de sección tipo terminal: "› PERIODO ACTIVO" */
-.kicker {
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 0.35rem;
-}
-.kicker::before { content: "› "; color: var(--accent-2); }
-
-/* ---------- Estructura ---------- */
-
-.nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem 1.4rem;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.85rem clamp(1rem, 4vw, 2.5rem);
-  background: rgb(8 11 17 / 0.96);
-  border-bottom: 1px solid var(--line);
-  position: sticky;
-  top: 0;
-  z-index: 20;
+div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
 }
 
-.brand { font-family: var(--mono); font-weight: 700; letter-spacing: -0.02em; }
-.brand span { color: var(--accent); }
-.nav-links { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; align-items: center; }
-.nav-links a { color: var(--muted); font-size: 0.92rem; }
-.nav-links a:hover { color: var(--text); }
-.nav-user { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); }
-
-.wrap { width: 100%; max-width: 1080px; margin: 0 auto; padding: clamp(1.25rem, 4vw, 2.5rem); flex: 1; }
-.wrap.narrow { max-width: 440px; }
-.wrap.mid { max-width: 760px; }
-
-.foot {
-  padding: 1.1rem;
-  text-align: center;
-  color: var(--muted);
-  font-family: var(--mono);
-  font-size: 0.74rem;
-  border-top: 1px solid var(--line);
+p {
+    margin: 5px 0;
+    text-align: center;
 }
 
-.head { margin-bottom: 1.6rem; }
-.head-row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; }
-
-/* ---------- Paneles ---------- */
-
-.card {
-  background: linear-gradient(160deg, var(--panel-2), var(--panel));
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--relieve);
-  padding: clamp(1.15rem, 3vw, 1.9rem);
-  /* Separación entre tarjetas apiladas; dentro de .grid la da el gap. */
-  margin-bottom: 1.15rem;
+ul {
+    list-style: none;
+    padding: 0;
 }
 
-.card:last-child { margin-bottom: 0; }
-
-/* align-items: start evita que una tarjeta corta se estire hasta la altura de la
-   más alta de la fila y quede con un hueco vacío debajo. */
-.grid {
-  display: grid;
-  gap: 1.15rem;
-  align-items: start;
-  margin-bottom: 1.15rem;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+li {
+    padding: 5px 0;
 }
 
-.grid > .card { margin-bottom: 0; }
-.grid:last-child { margin-bottom: 0; }
-
-.stat { font-family: var(--mono); font-size: clamp(2rem, 6vw, 2.7rem); font-weight: 700; line-height: 1; margin: 0.4rem 0 0.2rem; }
-.divider { border: 0; border-top: 1px solid var(--line); margin: 1.15rem 0; }
-
-/* ---------- Formularios ---------- */
-
-label { display: block; font-family: var(--mono); font-size: 0.76rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.35rem; }
-
-.input {
-  width: 100%;
-  padding: 0.75rem 0.95rem;
-  margin-bottom: 1.05rem;
-  color: var(--text);
-  font: inherit;
-  background: var(--bg-2);
-  border: 1px solid var(--line-2);
-  border-radius: 10px;
-  box-shadow: var(--hundido);
-  outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+label {
+    font-size: 1.2em;
+    margin-bottom: 5px;
 }
 
-.input:focus { border-color: var(--accent); box-shadow: var(--hundido), var(--ring); }
-.input::placeholder { color: rgb(127 141 166 / 0.6); }
-select.input { cursor: pointer; }
-textarea.input { min-height: 96px; resize: vertical; }
-
-.btn {
-  display: inline-block;
-  width: 100%;
-  padding: 0.75rem 1.2rem;
-  font: inherit;
-  font-weight: 650;
-  color: #05080e;
-  text-align: center;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  border: 0;
-  border-radius: 10px;
-  cursor: pointer;
-  box-shadow: var(--relieve);
-  transition: filter 0.15s, transform 0.12s, box-shadow 0.15s;
+input {
+    margin: 10px;
+    border: var(--border);
+    box-shadow: var(--BorderShadow);
+    padding: 8px;
 }
 
-.btn:hover { filter: brightness(1.1); color: #05080e; }
-.btn:active { transform: translateY(1px); box-shadow: var(--hundido); }
-.btn:focus-visible { box-shadow: var(--relieve), var(--ring); }
-.btn.auto { width: auto; }
-.btn.sm { padding: 0.45rem 0.8rem; font-size: 0.85rem; box-shadow: none; }
-
-.btn.ghost { color: var(--text); background: var(--panel-2); border: 1px solid var(--line-2); }
-.btn.ghost:hover { border-color: var(--accent); color: var(--accent); filter: none; }
-.btn.danger { color: var(--danger); background: var(--panel-2); border: 1px solid rgb(242 85 90 / 0.4); }
-.btn.danger:hover { background: rgb(242 85 90 / 0.12); color: var(--danger); filter: none; }
-
-.row-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.form-inline { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; }
-.form-inline > div { flex: 1 1 180px; }
-.form-inline .input { margin-bottom: 0; }
-
-/* Escala 1-5 */
-
-.scale { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.scale input { position: absolute; opacity: 0; width: 0; height: 0; }
-
-.scale label {
-  flex: 1 1 3rem;
-  margin: 0;
-  padding: 0.6rem 0;
-  font-family: var(--mono);
-  font-size: 1rem;
-  color: var(--text);
-  text-transform: none;
-  letter-spacing: 0;
-  text-align: center;
-  background: var(--bg-2);
-  border: 1px solid var(--line-2);
-  border-radius: 10px;
-  box-shadow: var(--hundido);
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+button {
+    width: 40vw;
+    height: 7vh;
+    margin: 10px;
+    background-color: #385288;
+    border: none;
+    color: var(--texto);
+    cursor: pointer;
+    font-size: 1em;
 }
 
-.scale label:hover { border-color: var(--accent); }
-.scale input:checked + label {
-  color: #05080e;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  border-color: transparent;
-  box-shadow: var(--relieve);
-}
-.scale input:focus-visible + label { box-shadow: var(--hundido), var(--ring); }
-.scale-hint { display: flex; justify-content: space-between; margin-top: 0.4rem; font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
-
-.preguntas { list-style: none; margin: 0; padding: 0; }
-.preguntas > li.card { margin-bottom: 1.15rem; }
-.preguntas fieldset { margin: 0; padding: 0; border: 0; }
-
-/* ---------- Tablas ---------- */
-
-.tabla-scroll { overflow-x: auto; margin-bottom: 1rem; }
-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
-th, td { padding: 0.6rem 0.75rem; text-align: left; border-bottom: 1px solid var(--line); }
-th { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-tbody tr:hover { background: rgb(59 130 246 / 0.05); }
-td.num, th.num { font-family: var(--mono); text-align: right; }
-
-/* ---------- Avisos y etiquetas ---------- */
-
-.alert {
-  padding: 0.75rem 1rem;
-  margin-bottom: 1.2rem;
-  border: 1px solid var(--line-2);
-  border-left: 3px solid var(--accent);
-  border-radius: 10px;
-  background: var(--accent-soft);
-  font-size: 0.93rem;
+select {
+    text-align: center;
+    width: 80vw;
+    height: 5vh;
+    margin: 10px;
 }
 
-.alert.error { border-left-color: var(--danger); background: rgb(242 85 90 / 0.12); }
-.alert.ok { border-left-color: var(--ok); background: rgb(34 197 94 / 0.12); }
-.alert.warn { border-left-color: var(--warn); background: rgb(245 158 11 / 0.12); }
-
-.badge {
-  display: inline-block;
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  font-weight: 650;
-  letter-spacing: 0.04em;
-  background: var(--accent-soft);
-  color: var(--accent);
-  border: 1px solid rgb(59 130 246 / 0.3);
+a {
+    text-decoration: none;
+    color: var(--texto);
 }
 
-.badge.ok { background: rgb(34 197 94 / 0.12); color: var(--ok); border-color: rgb(34 197 94 / 0.3); }
-.badge.off { background: rgb(242 85 90 / 0.12); color: var(--danger); border-color: rgb(242 85 90 / 0.3); }
-.badge.neutral { background: rgb(127 141 166 / 0.12); color: var(--muted); border-color: var(--line-2); }
-
-.chart { position: relative; height: 300px; margin-top: 1.15rem; }
-
-/* ---------- Fondo de constelación (solo en las pantallas de acceso) ---------- */
-
-#red {
-  position: fixed;
-  inset: 0;
-  /* width/height explícitos: el <canvas> es un elemento reemplazado y con
-     inset:0 NO se estira, se queda con su tamaño intrínseco (el del búfer). En
-     pantallas con escalado de Windows (125 %, 150 %) eso descuadraba el dibujo
-     respecto al puntero. */
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  pointer-events: none;
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 90vw;
+    height: 80vh;
+    gap: 10px;
+    margin: auto;
 }
 
-/* El contenido va por encima del lienzo */
-.nav, .subnav, .wrap, .foot { position: relative; z-index: 1; }
-
-@media (max-width: 560px) {
-  .nav { justify-content: center; text-align: center; }
-  .head-row .btn { width: 100%; }
-  .chart { height: 250px; }
-  body { background-size: 32px 32px, 32px 32px, auto, auto; }
+legend {
+    font-size: 7vw;
+    margin-bottom: 20px;
+    text-align: center;
 }
 
-/* Relieve al pasar el cursor: la tarjeta se levanta un poco */
-.card {
-  transition: box-shadow 0.25s ease, border-color 0.25s ease;
-}
-/* Al pasar el cursor la tarjeta no se desplaza: solo se marca el borde y sube el
-   relieve. Moverla de sitio hacía que el contenido pareciera descolocado. */
-.card:hover {
-  border-color: rgb(59 130 246 / 0.45);
-  box-shadow: 10px 10px 24px rgb(3 5 9 / 0.9), -8px -8px 22px rgb(30 40 60 / 0.38),
-              inset 0 1px 0 rgb(96 165 250 / 0.14);
+.btn-back {
+    display: inline-block;
+    padding: 8px 16px;
+    margin: 10px;
+    background-color: #385288;
+    border-radius: 4px;
+    font-weight: bold;
+    align-self: flex-start;
 }
 
-.nav { animation: entrar-nav 0.4s ease both; }
-.alert { animation: deslizar 0.35s ease both; }
-.head { animation: surgir 0.4s ease both; }
-
-/* Enlaces del menú: subrayado que crece desde la izquierda */
-.nav-links a, .subnav a { position: relative; }
-.nav-links a::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: -3px;
-  width: 100%;
-  height: 1px;
-  background: var(--accent);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.25s ease;
-}
-.nav-links a:hover::after { transform: scaleX(1); }
-
-/* Botón: destello que barre de izquierda a derecha al pasar el cursor */
-.btn { position: relative; overflow: hidden; }
-.btn::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.28) 50%, transparent 65%);
-  transform: translateX(-120%);
-  transition: transform 0.55s ease;
-}
-.btn:hover::after { transform: translateX(120%); }
-
-/* Botón trabajando: rueda girando y sin posibilidad de doble clic */
-.btn.cargando { color: transparent; cursor: progress; }
-.btn.cargando::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 1.05em;
-  height: 1.05em;
-  margin: -0.52em 0 0 -0.52em;
-  border: 2px solid rgb(5 8 14 / 0.35);
-  border-top-color: #05080e;
-  border-radius: 50%;
-  animation: girar 0.7s linear infinite;
-}
-.btn.ghost.cargando::before { border-color: var(--line-2); border-top-color: var(--accent); }
-
-/* Escala 1-5: la opción elegida da un saltito */
-.scale input:checked + label { animation: surgir 0.22s ease; }
-
-/* Punto que late junto a un estado en vivo ("periodo abierto") */
-.badge.vivo::before {
-  content: "";
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin-right: 0.4rem;
-  border-radius: 50%;
-  background: currentColor;
-  animation: latido 1.8s ease-in-out infinite;
+.btn-back:hover {
+    background-color: #4a6aa8;
 }
 
-/* Barra de avance: la anchura la pone anim.js y aquí se anima el recorrido */
-.barra > span { transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
-
-/* Filas de tabla y campos */
-tbody tr { transition: background 0.15s ease; }
-.input { transition: border-color 0.15s, box-shadow 0.15s, background 0.15s; }
-
-@keyframes aparecer { from { opacity: 0; } to { opacity: 1; } }
-
-@media (prefers-reduced-motion: reduce) {
-  /* No se apaga todo: molesta el desplazamiento y lo que repite sin fin, no un
-     desvanecido corto. Así la interfaz sigue viva con el sistema en "menos
-     movimiento", que en Windows viene apagado con más frecuencia de lo que parece. */
-  .card, .head, .nav, .alert { animation: aparecer 0.25s ease both; }
-  .badge.vivo::before { animation: none; }
-  .btn::after { transition: none; }
-  .scale input:checked + label { animation: none; }
+.error {
+    color: #ff6b6b;
+    background-color: #333;
+    padding: 10px 20px;
+    border-radius: 4px;
+    border: 1px solid #ff6b6b;
+    font-weight: bold;
+    text-align: center;
 }
 
-/* ==================================================================
-   Barras de desplazamiento
-   Las nativas salen claras y desentonan con el panel oscuro. Se
-   redefinen en los dos estándares: el moderno (scrollbar-color, que
-   entiende Firefox) y el de WebKit (Chrome, Edge, Safari).
-================================================================== */
-
-/* Le dice al navegador que pinte en oscuro todo lo nativo: barras,
-   desplegables, calendarios del datetime-local y la barra de la ventana. */
-:root { color-scheme: dark; }
-
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--line-2) transparent;
+nav {
+    margin-top: auto;
+    padding: 20px;
 }
 
-::-webkit-scrollbar {
-  width: 11px;
-  height: 11px;
+nav ul {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    justify-content: center;
 }
 
-::-webkit-scrollbar-track {
-  background: rgb(6 9 14 / 0.55);
-  border-radius: 999px;
+nav li {
+    padding: 10px;
 }
 
-::-webkit-scrollbar-thumb {
-  /* El borde transparente con background-clip deja aire alrededor del
-     pulgar: se ve más delgado sin reducir la zona en que se puede agarrar. */
-  background: var(--line-2);
-  background-clip: padding-box;
-  border: 3px solid transparent;
-  border-radius: 999px;
+nav a:hover {
+    color: #385288;
 }
 
-::-webkit-scrollbar-thumb:hover { background: #3d4b66; background-clip: padding-box; }
-::-webkit-scrollbar-thumb:active { background: var(--accent); background-clip: padding-box; }
-::-webkit-scrollbar-corner { background: transparent; }
+@media (min-width: 800px) {
+    body {
+        margin: 0;
+    }
 
-/* Las tablas anchas se desplazan dentro de su tarjeta: barra más fina, en
-   azul para que se note que ese bloque se mueve, y sin arrastrar el scroll
-   de la página al llegar al final. */
-.tabla-scroll {
-  overscroll-behavior-x: contain;
-  scrollbar-color: rgb(59 130 246 / 0.55) transparent;
-  padding-bottom: 0.35rem;
+    button {
+        width: 20vw;
+    }
+
+    #calification {
+        width: 60vw;
+        height: 59vh;
+    }
+
+    label {
+        font-size: 1.5vw;
+    }
+
+    select {
+        width: 60%;
+    }
+
+    input {
+        width: 30vw;
+        height: 6vh;
+    }
 }
 
-.tabla-scroll::-webkit-scrollbar { height: 9px; }
-.tabla-scroll::-webkit-scrollbar-thumb {
-  background: rgb(59 130 246 / 0.5);
-  background-clip: padding-box;
-
-  border: 2px solid transparent;
-}
-.tabla-scroll::-webkit-scrollbar-thumb:hover { background: var(--accent); background-clip: padding-box; }
-
-/* Área de texto de la carga masiva: misma barra fina */
-textarea.input { scrollbar-color: var(--line-2) transparent; }

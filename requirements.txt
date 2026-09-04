@@ -7,3 +7,4 @@ uvicorn
 asyncpg
 python-dotenv
 python-multipart
+loguru

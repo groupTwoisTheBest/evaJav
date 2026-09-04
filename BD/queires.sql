@@ -13,11 +13,11 @@
 -- (el hash se compara en la aplicación, no en SQL).
 SELECT id, nombre, contrasenna, id_grado
 FROM estudiantes
-WHERE email = 'juan.perez@colegio.edu.co';
+WHERE email = '$1';
 
 -- Registrar un nuevo estudiante.
 INSERT INTO estudiantes (nombre, contrasenna, email, id_grado)
-VALUES ('Juan Pérez', '$2b$12$hashDeEjemploGeneradoPorBcrypt', 'juan.perez@colegio.edu.co', 3);
+VALUES ('$1', '$2', '$3', $4);
 
 
 -- ------------------------------------------------------------
@@ -36,15 +36,15 @@ JOIN asignaciones a ON a.id = i.id_asignacion
 JOIN maestros     m ON m.id = a.id_profesor
 JOIN materias   mat ON mat.id = a.id_materia
 JOIN periodos     p ON p.id = a.id_periodo
-WHERE i.id_estudiante = 1
-  AND i.ya_voto = false
-  AND p.estado = 'abierto';
+WHERE i.id_estudiante = $1
+  AND i.ya_voto = $2
+  AND p.estado = '$3';
 
 -- Registrar una evaluación anónima. Nótese que esta sentencia
 -- nunca recibe el id del estudiante: solo el id de la
 -- asignación que está siendo calificada.
 INSERT INTO evaluaciones (id_asignacion, actitudinal, actividades, metodologia)
-VALUES (5, 3, 2, 3);
+VALUES ($1, $2, $3, $4);
 
 -- Marcar que el estudiante ya votó por esa asignación, para
 -- que no pueda volver a hacerlo. Esta actualización ocurre en
@@ -53,13 +53,13 @@ VALUES (5, 3, 2, 3);
 -- qué estudiante.
 UPDATE inscripciones
 SET ya_voto = true
-WHERE id_estudiante = 1
-  AND id_asignacion = 5;
+WHERE id_estudiante = $1
+  AND id_asignacion = $2;
 
 -- Matricular a un estudiante en una asignación (lo haría un
 -- administrador al cargar la lista de clases del periodo).
 INSERT INTO inscripciones (id_estudiante, id_asignacion)
-VALUES (1, 5);
+VALUES ($1, $2);
 
 
 -- ------------------------------------------------------------
@@ -70,7 +70,7 @@ VALUES (1, 5);
 -- actual, usando la vista definida en schema.sql.
 SELECT *
 FROM resultados_por_asignacion
-WHERE periodo = '2026-2'
+WHERE periodo = '$1'
 ORDER BY promedio_metodologia DESC;
 
 -- Detalle de resultados de un profesor específico a través de
@@ -87,7 +87,7 @@ JOIN maestros  m   ON m.id = a.id_profesor
 JOIN materias  mat ON mat.id = a.id_materia
 JOIN periodos  p   ON p.id = a.id_periodo
 JOIN evaluaciones e ON e.id_asignacion = a.id
-WHERE m.id = 4
+WHERE m.id = $1
 GROUP BY p.nombre, mat.nombre_materia
 ORDER BY p.nombre;
 
@@ -113,38 +113,19 @@ ORDER BY porcentaje_participacion ASC;
 
 -- Abrir el periodo de votación actual.
 UPDATE periodos
-SET estado = 'abierto'
-WHERE nombre = '2026-2';
+SET estado = '$1'
+WHERE nombre = '$2';
 
 -- Cerrar el periodo de votación actual (por ejemplo, al
 -- vencerse la fecha_fin).
 UPDATE periodos
-SET estado = 'cerrado'
-WHERE nombre = '2026-2';
-FROM "BD"
-WHERE "id_estudiante" IN (
-    SELECT "id"
-    FROM "Estudiante"
-    WHERE "Nombre" = 'Jony'
-    AND "Apellido" = 'Hernandez'
-);
-
-SELECT * 
-FROM "BD"
-WHERE "problema_id" = (
-    SELECT "id"
-    FROM "problemas"
-    WHERE "nombre" = 'Packages'
-);
-
--- Agregar un nuevo estudiante
-INSERT INTO "Estudiante" ("Nombre", "Apellido", "D_Identidad")
-VALUES ('Jony', 'Hernandez', '1032013457');
+SET estado = '$1'
+WHERE nombre = '$2';
 
 -- Crear una nueva asignación (asignar un profesor a una
 -- materia y grado dentro de un periodo).
 INSERT INTO asignaciones (id_profesor, id_materia, id_periodo, id_grado)
-VALUES (4, 2, 3, 5);
+VALUES ($1, $2, $3, $4);
 
 
 -- ------------------------------------------------------------
@@ -153,18 +134,18 @@ VALUES (4, 2, 3, 5);
 
 -- Corregir el nombre de un profesor.
 UPDATE maestros
-SET nombre = 'Carlos Andrés Gómez'
-WHERE id = 4;
+SET nombre = '$1'
+WHERE id = $2;
 
 -- Eliminar una asignación creada por error, siempre que no
 -- tenga inscripciones ni evaluaciones asociadas (las FK sin
 -- ON DELETE CASCADE lo impiden si ya tiene datos).
 DELETE FROM asignaciones
-WHERE id = 12;
+WHERE id = $1;
 
 -- Retirar a un estudiante de una asignación en la que fue
 -- inscrito por error, antes de que haya votado.
 DELETE FROM inscripciones
-WHERE id_estudiante = 7
-  AND id_asignacion = 5
-  AND ya_voto = false;
+WHERE id_estudiante = $1
+  AND id_asignacion = $2
+  AND ya_voto = $3;

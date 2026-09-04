@@ -1,255 +1,256 @@
 -- ============================================================
--- BASE DE DATOS: Sistema de gestión de estudiantes, maestros,
--- materias, inscripciones y calificaciones.
--- PostgreSQL 18.4
+-- evaJav — Plataforma de evaluación docente anónima
+-- schema.sql — Proyecto Final CS50 SQL
+-- Motor: PostgreSQL (hosteado en Neon)
 -- ============================================================
-
--- ------------------------------------------------------------
--- TABLA: Calificaciones
--- Almacena las calificaciones obtenidas por los estudiantes
--- en una relación específica entre profesor y materia.
--- ------------------------------------------------------------
-CREATE TABLE public."Calificaciones" (
-    -- Identificador único de la calificación.
-    id integer NOT NULL,
-
-    -- Identifica la asignación de un profesor a una materia.
-    -- Referencia a Profesor_Materia(id).
-    id_profesor_materia integer NOT NULL,
-
-    -- Puntuación obtenida.
-    -- Actualmente se almacena como texto; sería recomendable
-    -- utilizar NUMERIC si representa una calificación numérica.
-    puntuacion text,
-
-    -- Fecha y hora en que se registró la calificación.
-    fecha timestamp without time zone
-);
-
--- Clave primaria de la tabla de calificaciones.
-ALTER TABLE ONLY public."Calificaciones"
-    ADD CONSTRAINT "Calificaciones_pkey" PRIMARY KEY (id);
-
--- Relación entre la calificación y la asignación profesor-materia.
-ALTER TABLE ONLY public."Calificaciones"
-    ADD CONSTRAINT id_profesor_materia
-    FOREIGN KEY (id_profesor_materia)
-    REFERENCES public."Profesor_Materia"(id);
-
-
--- ------------------------------------------------------------
--- TABLA: Inscripciones
--- Registra las materias en las que está inscrito cada estudiante.
--- ------------------------------------------------------------
-CREATE TABLE public."Inscripciones" (
-    -- Identificador único de la inscripción.
-    id integer NOT NULL,
-
-    -- Estudiante que realiza la inscripción.
-    -- Referencia a estudiantes(id).
-    id_estudiante integer NOT NULL,
-
-    -- Materia impartida por un profesor en la que se inscribe
-    -- el estudiante.
-    -- Referencia a Profesor_Materia(id).
-    id_profesor_materia integer NOT NULL
-);
-
--- Clave primaria de las inscripciones.
-ALTER TABLE ONLY public."Inscripciones"
-    ADD CONSTRAINT "Inscripciones_pkey" PRIMARY KEY (id);
-
--- Relación con el estudiante.
-ALTER TABLE ONLY public."Inscripciones"
-    ADD CONSTRAINT id_estudiante
-    FOREIGN KEY (id_estudiante)
-    REFERENCES public.estudiantes(id);
-
--- Relación con profesor y materia.
-ALTER TABLE ONLY public."Inscripciones"
-    ADD CONSTRAINT id_profesor_materia
-    FOREIGN KEY (id_profesor_materia)
-    REFERENCES public."Profesor_Materia"(id);
-
-
--- ------------------------------------------------------------
--- TABLA: Profesor_Materia
--- Tabla intermedia que relaciona maestros con materias.
--- Permite saber qué profesor imparte cada materia.
--- ------------------------------------------------------------
-CREATE TABLE public."Profesor_Materia" (
-    -- Identificador único de la relación.
-    id integer NOT NULL,
-
-    -- Profesor encargado de impartir la materia.
-    -- Referencia a maestros(id).
-    id_profesor integer NOT NULL,
-
-    -- Materia que imparte el profesor.
-    -- Referencia a materias(id).
-    id_materia integer NOT NULL
-);
-
--- Clave primaria de la relación profesor-materia.
-ALTER TABLE ONLY public."Profesor_Materia"
-    ADD CONSTRAINT "Profesor_Materia_pkey" PRIMARY KEY (id);
-
--- Relación con el profesor.
-ALTER TABLE ONLY public."Profesor_Materia"
-    ADD CONSTRAINT id_profesor
-    FOREIGN KEY (id_profesor)
-    REFERENCES public.maestros(id);
-
--- Relación con la materia.
-ALTER TABLE ONLY public."Profesor_Materia"
-    ADD CONSTRAINT id_materia
-    FOREIGN KEY (id_materia)
-    REFERENCES public.materias(id);
-
-
-
-
--- ------------------------------------------------------------
--- TABLA: estudiantes
--- Almacena la información académica y de contacto
--- de los estudiantes.
--- ------------------------------------------------------------
-CREATE TABLE public.estudiantes (
-    -- Identificador único del estudiante.
-    id integer NOT NULL,
-
-    -- Nombre del estudiante.
-    nombre character varying(20) NOT NULL,
-
-    -- Contraseña del estudiante.
-    -- ADVERTENCIA: debería almacenarse como hash, no como
-    -- contraseña directamente.
-    contrasenna text NOT NULL,
-
-    -- Correo electrónico del estudiante.
-    email text NOT NULL,
-
-    -- Grado académico al que pertenece.
-    id_grados integer NOT NULL
-);
-
--- Clave primaria del estudiante.
-ALTER TABLE ONLY public.estudiantes
-    ADD CONSTRAINT estudiantes_pkey PRIMARY KEY (id);
-
--- Un grado solamente puede aparecer una vez en esta tabla.
--- Esto implica que actualmente cada grado puede estar asociado
--- a un único estudiante, lo cual probablemente no es lo esperado.
-ALTER TABLE ONLY public.estudiantes
-    ADD CONSTRAINT estudiantes_id_grados_key UNIQUE (id_grados);
-
--- Relación entre estudiante y grado.
-ALTER TABLE ONLY public.estudiantes
-    ADD CONSTRAINT id_grado
-    FOREIGN KEY (id_grados)
-    REFERENCES public.grados(id);
 
 
 -- ------------------------------------------------------------
 -- TABLA: grados
--- Catálogo de los grados académicos disponibles.
+-- Catálogo de los grados académicos disponibles en el colegio.
 -- ------------------------------------------------------------
-CREATE TABLE public.grados (
-    -- Identificador único del grado.
-    id_grado integer NOT NULL,
+CREATE TABLE grados (
+    id_grado     integer GENERATED ALWAYS AS IDENTITY,
+    nombre_grado varchar(4) NOT NULL,
 
-    -- Nombre o código del grado.
-    -- Ejemplos: '10A', '11B', etc.
-    nombre_grado character varying(4) NOT NULL
+    CONSTRAINT grados_pkey PRIMARY KEY (id_grado),
+    CONSTRAINT grados_nombre_grado_key UNIQUE (nombre_grado)
 );
 
--- Clave primaria del grado.
-ALTER TABLE ONLY public.grados
-    ADD CONSTRAINT grados_pkey PRIMARY KEY (id_grado);
+
+-- ------------------------------------------------------------
+-- TABLA: estudiantes
+-- Usuarios que inician sesión y emiten evaluaciones.
+-- ------------------------------------------------------------
+CREATE TABLE estudiantes (
+    id          integer GENERATED ALWAYS AS IDENTITY,
+    nombre      varchar(60) NOT NULL,
+
+    -- La aplicación siempre debe insertar aquí un hash
+    -- (ej. bcrypt vía passlib), nunca la contraseña en texto plano.
+    contrasenna text NOT NULL,
+
+    email       text NOT NULL,
+    id_grado    integer NOT NULL,
+
+    CONSTRAINT estudiantes_pkey PRIMARY KEY (id),
+    CONSTRAINT estudiantes_email_key UNIQUE (email),
+    CONSTRAINT estudiantes_id_grado_fkey
+        FOREIGN KEY (id_grado) REFERENCES grados (id_grado)
+);
+
+CREATE INDEX idx_estudiantes_id_grado ON estudiantes (id_grado);
+
+
+-- ------------------------------------------------------------
+-- TABLA: administradores
+-- Usuarios con permisos para consultar resultados agregados
+-- y gestionar periodos de votación.
+-- ------------------------------------------------------------
+CREATE TABLE administradores (
+    id          integer GENERATED ALWAYS AS IDENTITY,
+    nombre      varchar(60) NOT NULL,
+
+    -- Igual que en estudiantes: siempre hash, nunca texto plano.
+    contrasenna text NOT NULL,
+
+    email       text NOT NULL,
+
+    CONSTRAINT administradores_pkey PRIMARY KEY (id),
+    CONSTRAINT administradores_email_key UNIQUE (email)
+);
 
 
 -- ------------------------------------------------------------
 -- TABLA: maestros
--- Catálogo de profesores.
+-- Profesores que pueden ser evaluados.
 -- ------------------------------------------------------------
-CREATE TABLE public.maestros (
-    -- Identificador único del profesor.
-    id integer NOT NULL,
+CREATE TABLE maestros (
+    id     integer GENERATED ALWAYS AS IDENTITY,
+    nombre varchar(60) NOT NULL,
 
-    -- Nombre del profesor.
-    nombre character varying(20) NOT NULL
+    CONSTRAINT maestros_pkey PRIMARY KEY (id)
 );
-
--- Clave primaria del profesor.
-ALTER TABLE ONLY public.maestros
-    ADD CONSTRAINT maestros_pkey PRIMARY KEY (id);
-
-
 
 
 -- ------------------------------------------------------------
 -- TABLA: materias
--- Catálogo de materias disponibles.
+-- Catálogo de asignaturas del colegio.
 -- ------------------------------------------------------------
-CREATE TABLE public.materias (
-    -- Identificador único de la materia.
-    id integer NOT NULL,
+CREATE TABLE materias (
+    id             integer GENERATED ALWAYS AS IDENTITY,
+    nombre_materia varchar(60) NOT NULL,
 
-    -- Nombre de la materia.
-    nombre_materia character varying(20) NOT NULL
+    CONSTRAINT materias_pkey PRIMARY KEY (id),
+    CONSTRAINT materias_nombre_materia_key UNIQUE (nombre_materia)
 );
 
--- Clave primaria de la materia.
-ALTER TABLE ONLY public.materias
-    ADD CONSTRAINT materias_pkey PRIMARY KEY (id);
 
--- No permite registrar dos materias con el mismo nombre.
-ALTER TABLE ONLY public.materias
-    ADD CONSTRAINT materias_nombre_materia_key
-    UNIQUE (nombre_materia);
+-- ------------------------------------------------------------
+-- TABLA: periodos
+-- Ventana de tiempo durante la cual las votaciones están
+-- abiertas. Permite que un profesor cambie de materia entre
+-- un periodo y otro sin perder el histórico de evaluaciones.
+-- ------------------------------------------------------------
+CREATE TABLE periodos (
+    id            integer GENERATED ALWAYS AS IDENTITY,
+
+    -- Ej: '2026-1', '2026-2'.
+    nombre        varchar(20) NOT NULL,
+
+    fecha_inicio  date NOT NULL,
+    fecha_fin     date NOT NULL,
+
+    -- Controla si actualmente se pueden registrar evaluaciones
+    -- para las asignaciones de este periodo.
+    estado        varchar(10) NOT NULL DEFAULT 'cerrado',
+
+    CONSTRAINT periodos_pkey PRIMARY KEY (id),
+    CONSTRAINT periodos_nombre_key UNIQUE (nombre),
+    CONSTRAINT periodos_estado_check
+        CHECK (estado IN ('abierto', 'cerrado')),
+    CONSTRAINT periodos_fechas_check
+        CHECK (fecha_fin >= fecha_inicio)
+);
 
 
--- ============================================================
--- RELACIONES PRINCIPALES DEL SISTEMA
--- ============================================================
+-- ------------------------------------------------------------
+-- TABLA: asignaciones
+-- Qué materia dicta cada profesor, a qué grado y en qué
+-- periodo. Es la entidad "puente" central del sistema: casi
+-- todo lo demás (inscripciones, evaluaciones) cuelga de aquí.
+-- ------------------------------------------------------------
+CREATE TABLE asignaciones (
+    id           integer GENERATED ALWAYS AS IDENTITY,
+    id_profesor  integer NOT NULL,
+    id_materia   integer NOT NULL,
+    id_periodo   integer NOT NULL,
 
--- Un estudiante pertenece a un grado.
+    -- Grado al que va dirigida esta clase. Permite responder
+    -- "¿qué profesores le corresponden a un estudiante de
+    -- grado X?" con un simple JOIN, sin depender de que ya
+    -- existan inscripciones cargadas.
+    id_grado     integer NOT NULL,
+
+    CONSTRAINT asignaciones_pkey PRIMARY KEY (id),
+    CONSTRAINT asignaciones_id_profesor_fkey
+        FOREIGN KEY (id_profesor) REFERENCES maestros (id),
+    CONSTRAINT asignaciones_id_materia_fkey
+        FOREIGN KEY (id_materia) REFERENCES materias (id),
+    CONSTRAINT asignaciones_id_periodo_fkey
+        FOREIGN KEY (id_periodo) REFERENCES periodos (id),
+    CONSTRAINT asignaciones_id_grado_fkey
+        FOREIGN KEY (id_grado) REFERENCES grados (id_grado),
+
+    -- Un mismo profesor no puede tener la misma materia
+    -- duplicada para el mismo grado dentro de un mismo periodo
+    -- (pero sí puede dictarla a grados distintos: son filas
+    -- distintas).
+    CONSTRAINT asignaciones_unicas
+        UNIQUE (id_profesor, id_materia, id_grado, id_periodo)
+);
+
+CREATE INDEX idx_asignaciones_id_profesor ON asignaciones (id_profesor);
+CREATE INDEX idx_asignaciones_id_materia  ON asignaciones (id_materia);
+CREATE INDEX idx_asignaciones_id_periodo  ON asignaciones (id_periodo);
+CREATE INDEX idx_asignaciones_id_grado    ON asignaciones (id_grado);
+
+
+-- ------------------------------------------------------------
+-- TABLA: inscripciones
+-- Qué estudiante está matriculado en qué asignación
+-- (profesor + materia + grado + periodo).
+-- ------------------------------------------------------------
+CREATE TABLE inscripciones (
+    id             integer GENERATED ALWAYS AS IDENTITY,
+    id_estudiante  integer NOT NULL,
+    id_asignacion  integer NOT NULL,
+
+    -- Controla que el estudiante solo pueda votar una vez por
+    -- esta asignación, SIN necesidad de vincular su identidad
+    -- a la evaluación en sí (esa relación no existe en
+    -- "evaluaciones", ver más abajo).
+    ya_voto        boolean NOT NULL DEFAULT false,
+
+    CONSTRAINT inscripciones_pkey PRIMARY KEY (id),
+    CONSTRAINT inscripciones_id_estudiante_fkey
+        FOREIGN KEY (id_estudiante) REFERENCES estudiantes (id),
+    CONSTRAINT inscripciones_id_asignacion_fkey
+        FOREIGN KEY (id_asignacion) REFERENCES asignaciones (id),
+
+    -- Un estudiante no puede inscribirse dos veces a la misma
+    -- asignación.
+    CONSTRAINT inscripciones_unicas
+        UNIQUE (id_estudiante, id_asignacion)
+);
+
+CREATE INDEX idx_inscripciones_id_estudiante ON inscripciones (id_estudiante);
+CREATE INDEX idx_inscripciones_id_asignacion ON inscripciones (id_asignacion);
+
+
+-- ------------------------------------------------------------
+-- TABLA: evaluaciones
+-- Cada evaluación anónima realizada sobre una asignación
+-- (profesor + materia + periodo).
 --
--- estudiantes
---      |
---      | id_grados
---      v
--- grados
-
-
--- Un profesor puede impartir una o varias materias.
+-- IMPORTANTE: esta tabla NO tiene ninguna columna que
+-- referencie a "estudiantes". Esto es intencional: garantiza
+-- a nivel de esquema que ninguna consulta pueda vincular una
+-- evaluación con la identidad de quien la realizó. El control
+-- de "quién ya votó" vive en "inscripciones", no aquí.
 --
--- maestros
---      |
---      v
--- Profesor_Materia
---      ^
---      |
--- materias
+-- Escala de cada criterio: 1 = Malo, 2 = Bien, 3 = Excelente.
+-- La aplicación muestra las etiquetas cualitativas; aquí se
+-- guarda el valor numérico para poder calcular promedios (AVG).
+-- ------------------------------------------------------------
+CREATE TABLE evaluaciones (
+    id            integer GENERATED ALWAYS AS IDENTITY,
+    id_asignacion integer NOT NULL,
+
+    actitudinal   smallint NOT NULL,
+    actividades   smallint NOT NULL,
+    metodologia   smallint NOT NULL,
+
+    fecha         timestamp NOT NULL DEFAULT now(),
+
+    CONSTRAINT evaluaciones_pkey PRIMARY KEY (id),
+    CONSTRAINT evaluaciones_id_asignacion_fkey
+        FOREIGN KEY (id_asignacion) REFERENCES asignaciones (id),
+
+    CONSTRAINT evaluaciones_actitudinal_check
+        CHECK (actitudinal BETWEEN 1 AND 3),
+    CONSTRAINT evaluaciones_actividades_check
+        CHECK (actividades BETWEEN 1 AND 3),
+    CONSTRAINT evaluaciones_metodologia_check
+        CHECK (metodologia BETWEEN 1 AND 3)
+);
+
+CREATE INDEX idx_evaluaciones_id_asignacion ON evaluaciones (id_asignacion);
 
 
--- Los estudiantes se inscriben en una relación
--- profesor-materia.
---
--- estudiantes
---      |
---      v
--- Inscripciones
---      |
---      v
--- Profesor_Materia
-
-
--- Las calificaciones están asociadas a una relación
--- profesor-materia.
---
--- Profesor_Materia
---      |
---      v
--- Calificaciones
-
+-- ------------------------------------------------------------
+-- VIEW: resultados_por_asignacion
+-- Optimización de lectura: la consulta más frecuente del panel
+-- de administración es "el promedio de cada criterio por cada
+-- asignación, con el nombre del profesor y de la materia ya
+-- resueltos". En vez de repetir ese JOIN + AVG + GROUP BY en
+-- cada endpoint, se deja resuelto en una vista.
+-- ------------------------------------------------------------
+CREATE VIEW resultados_por_asignacion AS
+SELECT
+    a.id                          AS id_asignacion,
+    m.nombre                      AS profesor,
+    mat.nombre_materia            AS materia,
+    g.nombre_grado                AS grado,
+    p.nombre                      AS periodo,
+    COUNT(e.id)                   AS total_evaluaciones,
+    ROUND(AVG(e.actitudinal), 2)  AS promedio_actitudinal,
+    ROUND(AVG(e.actividades), 2)  AS promedio_actividades,
+    ROUND(AVG(e.metodologia), 2)  AS promedio_metodologia
+FROM asignaciones a
+JOIN maestros  m   ON m.id   = a.id_profesor
+JOIN materias  mat ON mat.id = a.id_materia
+JOIN grados    g   ON g.id_grado = a.id_grado
+JOIN periodos  p   ON p.id   = a.id_periodo
+LEFT JOIN evaluaciones e ON e.id_asignacion = a.id
+GROUP BY a.id, m.nombre, mat.nombre_materia, g.nombre_grado, p.nombre;

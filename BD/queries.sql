@@ -13,7 +13,7 @@ FROM "BD"
 WHERE "problema_id" = (
     SELECT "id"
     FROM "problemas"
-    WHERE "name" = 'Packages'
+    WHERE "nombre" = 'Packages'
 );
 
 -- Agregar un nuevo estudiante

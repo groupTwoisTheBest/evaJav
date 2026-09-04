@@ -1,7 +1,7 @@
 async def inicio_sesion(conn, email: str, contrasenna: str) -> dict | None:
     row = await conn.fetchrow(
         "SELECT email, contrasenna FROM estudiantes WHERE email = $1 AND contrasenna = $2",
-        email, contrasenna,
+        email, contrasenna
     )
     return dict(row) if row else None
 

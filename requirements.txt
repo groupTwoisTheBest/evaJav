@@ -2,9 +2,6 @@ fastapi
 jinja2
 asyncpg
 python-dotenv
-pytest
-uvicorn
-asyncpg
-python-dotenv
 python-multipart
 loguru
+uvicorn

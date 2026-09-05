@@ -1,29 +1,42 @@
 {% extends "base.html" %}
 {% block title %}Registrarse - EvaJav{% endblock %}
 {% block content %}
-<form action="/inicio-sesion" method="get">
+<form action="/nuevo-usuario" method="post">
 
 <legend>Registro</legend>
 
-    <div>
+{% if error %}
+<p style="color: red; font-weight: bold;">{{ error }}</p>
+{% endif %}
 
-         <label for="username">Crea un correo </label>
-         <input id="username" name="username" type="text" placeholder="Ej. correo@ejemplo.com" required>
+{% if message %}
+<p style="color: green; font-weight: bold;">{{ message }}</p>
+{% endif %}
 
-    </div>
 
-    <div>
 
-    <label for="password">Crear contraseña</label>
-    <input id="password" name="password" type="password" placeholder="Ej. javieram" required>
+     <label for="username">Pon tu nombre </label>
+          <input id="nombre" name="nombre" type="text" placeholder="Ej. Juanito Perez" required>
 
-    </div>
+     <label for="email">Crea un correo </label>
+          <input id="email" name="email" type="email" placeholder="Ej. correo@ejemplo.com" required>
+
+
+     <label for="password">Crear contraseña</label>
+     <input id="contrasenna" name="contrasenna" type="password" placeholder="Ej. javieram" required>
+
+     <label for="grado">selecciona un grado</label>
+          <select name="grado" required id="grado">
+               <option disabled selected>Selecciona tu grado</option>
+               <option value="1">grado 11</option>
+          </select>
+
+
 
      <button type="submit">Registrarse</button>
 
-</fieldset>
-     <p>¿Ya tienes una cuenta? <a href="/inicio-sesion">Inicia sesión aquí</a></p>
 
+     <p>¿Ya tienes una cuenta? <a href="/inicio-sesion">Inicia sesión aquí</a></p>
 
 </form>
 {% endblock %}

@@ -13,16 +13,16 @@
 
         <legend>EVAJ</legend>
 
-            {% if error %}
-            <p style="color: red;">Credenciales incorrectas</p>
-            {% endif %}
+
 
             <label for="email">Email</label>
             <input id="email" name="email" type="text" placeholder="Correo electrónico" required>
             <label for="contrasenna">Contraseña</label>
             <input id="contrasenna" name="contrasenna" type="password" placeholder="Contraseña" required>
             <button>Ingresar</button>
-
+            {% if error %}
+            <p style="color: red;">Credenciales incorrectas</p>
+            {% endif %}
     </form>
  
 {% endblock %}

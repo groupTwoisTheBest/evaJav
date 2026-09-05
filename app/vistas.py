@@ -1,12 +1,7 @@
-import asyncpg
-from fastapi import APIRouter, Depends, Request, Form, status
-from fastapi.responses import RedirectResponse, PlainTextResponse, HTMLResponse
-from fastapi.templating import Jinja2Templates
-from loguru import logger
-from app.database import get_db
-from app.repositorio import inicio_sesion as autenticar_estudiante      
-from typing import Annotated
-ConnectionDep = Annotated[asyncpg.Connection, Depends(get_db)]
+from app.dependencias import APIRouter, Depends, Request, Form, status, RedirectResponse, PlainTextResponse, HTMLResponse, Jinja2Templates, logger
+from app.repositorio import inicio_sesion as autenticar_estudiante, registrar_estudiante, existe_email
+from app.dependencias import ConnectionDep
+from app.esquemas import crear_estudiante
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -48,6 +43,20 @@ async def login(
         return RedirectResponse(url="/inicio-sesion?error=1", status_code=status.HTTP_303_SEE_OTHER)
     return RedirectResponse(url="/seleccionatuprofesor", status_code=status.HTTP_303_SEE_OTHER)
 
+@router.post("/nuevo-usuario")
+async def nuevo_usuario(
+    request: Request,
+    conn: ConnectionDep,
+    nombre: str = Form(...),
+    email: str = Form(...),
+    contrasenna: str = Form(...),
+    grado: int = Form(...)
+):
+    if await existe_email(conn, email):
+        return templates.TemplateResponse(request=request, name="registrarse.html", context={"error": "El correo ya está registrado."})
+    estudiante = crear_estudiante(nombre=nombre, email=email, contrasenna=contrasenna)
+    await registrar_estudiante(conn, estudiante.nombre, estudiante.email, estudiante.contrasenna, grado)
+    return templates.TemplateResponse(request=request, name="registrarse.html", context={"message": "Registrado exitosamente."})
 
 
 @router.get("/seleccionatuprofesor", response_class=HTMLResponse)

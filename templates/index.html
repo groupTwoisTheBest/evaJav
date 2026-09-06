@@ -1,30 +1,44 @@
 {% extends "base.html" %}
 {% block title %}Evalua Javiera{% endblock %}
-{% block stylesheets %}
-<link rel="stylesheet" href="{{ url_for('static', path='index.css') }}">
-{% endblock %}
-{% block scripts %}
-<script src="{{ url_for('static', path='js/index.js') }}"></script>
-{% endblock %}
+
 
 {% block content %}
 
     <form action="/login" method="post">
 
-        <legend>EVAJ</legend>
+    <nav class="nav">
+        <div class="brand">Evaluación <span>Docente</span></div>
+    </nav>
 
-            {% if error %}
-            <p style="color: red;">Credenciales incorrectas</p>
-            {% endif %}
+        {% if error %}
+        <p style="color: red;">Credenciales incorrectas</p>
+        {% endif %}
 
+    <main class="wrap narrow">
+
+<div class="card center">
+    <h2>Ingreso estudiantes</h2>
+    <p class="muted">Llena los campos para ingresar.</p>
+
+    <form action="/login" method="POST">
             <label for="email">Email</label>
-            <input id="email" name="email" type="text" placeholder="Correo electrónico" required>
+            <input class="input"id="email" name="email" type="text" placeholder="ingresa tu correo electrónico" required>
             <label for="contrasenna">Contraseña</label>
-            <input id="contrasenna" name="contrasenna" type="password" placeholder="Contraseña" required>
-            <button>Ingresar</button>
+            <input class="input"id="contrasenna" name="contrasenna" type="password" placeholder="Ingresa tu contraseña" required>
+        <button class="btn" type="submit">Entrar</button>
+    </form>
+
+    <p class="muted small mt">
+        ¿Aún no estás registrado? <a href="/registrarse">Regístrate aquí</a>
+    </p>
+</div>
 
     </form>
- 
+
+</main>
+
+<footer class="foot">Tus respuestas son anónimas: los reportes solo muestran promedios.</footer>
+
 {% endblock %}
 
 

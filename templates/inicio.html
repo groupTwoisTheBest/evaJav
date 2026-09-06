@@ -1,15 +1,36 @@
 {% extends "base.html" %}
 {% block title %}EvaJav{% endblock %}
 {% block content %}
-<form>
-    <h1>EvaJav - Evaluación de Profesores</h1>
-    <nav>
-        <a href="/inicio-sesion" >
-            <button type="button" value="Iniciar sesión">Iniciar sesión</button>
-        </a>
-        <a href="/registrarse">
-            <button type="button" value="Registrarse">Registrarse</button>
-        </a>
+<form action="/login" method="POST">
+    <nav class="nav">
+        <div class="brand">Evaluación <span>Docente</span></div>
     </nav>
 </form>
+
+    <main class="wrap narrow">
+        
+        
+        
+<div class="card center">
+    <h2>Ingreso estudiantes</h2>
+    <p class="muted">Inicia sesión o registrate para continuar.</p>
+
+
+    <div class="center">
+        <a href="/inicio-sesion" >
+            <button class="btn" type="button" value="Iniciar sesión">Iniciar sesión</button>
+        </a>
+    </div>
+
+    <div class="center">
+        <a href="/registrarse">
+            <button class="btn" type="button" value="Registrarse">Registrarse</button>
+        </a>
+    </div>
+    </form>
+
+    </main>
+<footer class="foot">Tus respuestas son anónimas: los reportes solo muestran promedios.</footer>
+
+
 {% endblock %}

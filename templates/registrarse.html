@@ -1,29 +1,45 @@
 {% extends "base.html" %}
 {% block title %}Registrarse - EvaJav{% endblock %}
 {% block content %}
-<form action="/inicio-sesion" method="get">
 
-<legend>Registro</legend>
+<script src="/static/js/red.js?v=9" defer></script>
 
-    <div>
+<nav class="nav">
+<div class="brand">Evaluación <span>Docente</span></div>
+</nav>
 
-         <label for="username">Crea un correo </label>
-         <input id="username" name="username" type="text" placeholder="Ej. correo@ejemplo.com" required>
+<main class="wrap narrow">
 
-    </div>
+<div class="card">
+     <h2 class="center">Crear cuenta</h2>
+     <p class="muted center">Esto garantiza que solo puedas votar una vez por profesor.</p>
 
-    <div>
+     <form action="/registro" method="POST">
+          <label for="nombre">Crear una cuenta</label>
+          <input class="input" type="text" id="nombre" name="nombre" placeholder="Ej. ejemplo@javiera.com" required autofocus>
 
-    <label for="password">Crear contraseña</label>
-    <input id="password" name="password" type="password" placeholder="Ej. javieram" required>
+          <label for="apellido">Crea una contraseña</label>
+          <input class="input" type="password" id="apellido" name="apellido" placeholder="Ej. javieram" required>
 
-    </div>
+          <label for="grupo_id">Grupo</label>
+               <select class="input" id="grupo_id" name="grupo_id" required>
+                    <option value="" disabled selected>Selecciona tu grupo</option>
+                    <option value="3">11-1</option>
+                    <option value="1">11-2</option>
+                    <option value="2">11-3</option>
+                    <option value="3">11-4</option>
+                    <option value="1">11-5</option>
+                    <option value="2">11-6</option>
+               </select>
 
-     <button type="submit">Registrarse</button>
-
-</fieldset>
-     <p>¿Ya tienes una cuenta? <a href="/inicio-sesion">Inicia sesión aquí</a></p>
-
-
+     <button class="btn" type="submit">Guardar registro</button>
 </form>
+
+<p class="muted small center mt mb-0"><a href="/">Volver al ingreso</a></p>
+</div>
+
+</main>
+
+<footer class="foot">Tus respuestas son anónimas: los reportes solo muestran promedios.</footer>
+
 {% endblock %}

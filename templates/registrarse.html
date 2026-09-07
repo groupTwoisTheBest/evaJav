@@ -2,7 +2,6 @@
 {% block title %}Registrarse - EvaJav{% endblock %}
 {% block content %}
 
-<script src="/static/js/red.js?v=9" defer></script>
 
 <nav class="nav">
 <div class="brand">Evaluación <span>Docente</span></div>
@@ -14,25 +13,33 @@
      <h2 class="center">Crear cuenta</h2>
      <p class="muted center">Esto garantiza que solo puedas votar una vez por profesor.</p>
 
-     <form action="/registro" method="POST">
-          <label for="nombre">Crear una cuenta</label>
+     <form action="/nuevo-usuario" method="POST">
+          
+          <label for="nombre">Crear un correo</label>
           <input class="input" type="text" id="nombre" name="nombre" placeholder="Ej. ejemplo@javiera.com" required autofocus>
-
+<label for="email">Crear un correo</label>
+          <input class="input" type="email" id="email" name="email" placeholder="Ej. ejemplo@javiera.com" required autofocus>
           <label for="apellido">Crea una contraseña</label>
           <input class="input" type="password" id="apellido" name="apellido" placeholder="Ej. javieram" required>
 
-          <label for="grupo_id">Grupo</label>
-               <select class="input" id="grupo_id" name="grupo_id" required>
+          <label for="grado">Grupo</label>
+               <select class="input" id="grado" name="grado" required>
                     <option value="" disabled selected>Selecciona tu grupo</option>
                     <option value="3">11-1</option>
-                    <option value="1">11-2</option>
-                    <option value="2">11-3</option>
-                    <option value="3">11-4</option>
-                    <option value="1">11-5</option>
-                    <option value="2">11-6</option>
+                    <option value="2">11-2</option>
+                    <option value="1">11-3</option>
+                    <option value="4">11-4</option>
+                    <option value="5">11-5</option>
+                    <option value="6">11-6</option>
                </select>
 
-     <button class="btn" type="submit">Guardar registro</button>
+     <button class="btn">Guardar registro</button>
+{% if error %}
+<p style="color: red; font-weight: bold;">{{ error }}</p>
+{% endif %}
+{% if message %}
+<p style="color: green; font-weight: bold;">{{ message }}</p>
+{% endif %}
 </form>
 
 <p class="muted small center mt mb-0"><a href="/">Volver al ingreso</a></p>

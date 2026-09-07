@@ -24,7 +24,7 @@
   --relieve: 8px 8px 20px rgb(3 5 9 / 0.85), -6px -6px 18px rgb(30 40 60 / 0.35);
   --hundido: inset 4px 4px 10px rgb(3 5 9 / 0.9), inset -3px -3px 9px rgb(30 40 60 / 0.28);
   --ring: 0 0 0 3px rgb(59 130 246 / 0.35);
-}6
+}
 
 * { box-sizing: border-box; }
 

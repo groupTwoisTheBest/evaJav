@@ -17,17 +17,37 @@ async def existe_email(conn, email: str) -> bool:
     return row is not None
 
 async def registrar_estudiante(conn, nombre: str, email: str, contrasenna: str, grado: int) -> None:
-    await conn.execute(
-        "INSERT INTO estudiantes (nombre, contrasenna, email, id_grado) VALUES ($1, $2, $3, $4)",
-        nombre, contrasenna, email, grado
-    )
+    async with conn.transaction():
+        estudiante_id = await conn.fetchval(
+            """
+            INSERT INTO estudiantes (nombre, contrasenna, email, id_grado)
+            VALUES ($1, $2, $3, $4)
+            RETURNING id
+            """,
+            nombre, contrasenna, email, grado
+        )
 
-async def select_profesor(conn)-> list[dict]:
+        await conn.execute(
+            """
+            INSERT INTO inscripciones (id_estudiante, id_asignacion)
+            SELECT $1, asignaciones.id
+            FROM asignaciones
+            JOIN periodos ON periodos.id = asignaciones.id_periodo
+            WHERE asignaciones.id_grado = $2
+              AND periodos.estado = 'abierto'
+            """,
+            estudiante_id, grado
+        )
+async def select_profesor(conn, email: str) -> list[dict]:
     rows = await conn.fetch("""
-SELECT maestros.nombre FROM inscripciones 
-JOIN asignaciones ON inscripciones.id_asignacion = asignaciones.id
-JOIN estudiantes ON inscripciones.id_estudiante = estudiantes.id
-JOIN maestros ON asignaciones.id_profesor = maestros.id
-WHERE inscripciones.ya_voto = false
-    """)
-    return [dict(row) for row in rows] if rows else None
+SELECT DISTINCT maestros.nombre
+FROM asignaciones
+JOIN maestros ON maestros.id = asignaciones.id_profesor
+JOIN estudiantes ON estudiantes.id_grado = asignaciones.id_grado
+LEFT JOIN inscripciones
+    ON inscripciones.id_asignacion = asignaciones.id
+    AND inscripciones.id_estudiante = estudiantes.id
+WHERE estudiantes.email = $1
+  AND (inscripciones.ya_voto IS NULL OR inscripciones.ya_voto = false)
+    """, email)
+    return [dict(row) for row in rows] if rows else []

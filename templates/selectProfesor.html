@@ -35,9 +35,11 @@
         <h2 for="maestro" >¿A quién quieres evaluar?</h2>
             <select class="input" id="maestro" name="maestro" required>
                 <option value="">Elige a un maestro</option>
-                <option value="Lenny">Lenny</option>
-                <option value="Erika">Erika</option>
-                <option value="Fredy">Freddy</option>
+                {% if profesores %}
+                    {% for profesor in profesores %}
+                        <option value="{{profesor.nombre}}">{{profesor.nombre}}</option>
+                    {% endfor %}
+                {% endif %}
             </select>
         <button class="btn mt" type="submit" >seguir</button>
     </div>

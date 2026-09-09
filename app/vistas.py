@@ -1,5 +1,5 @@
 from app.dependencias import APIRouter, Depends, Request, Form, status, RedirectResponse, PlainTextResponse, HTMLResponse, Jinja2Templates, logger
-from app.repositorio import inicio_sesion as autenticar_estudiante, registrar_estudiante, existe_email
+from app.repositorio import inicio_sesion as autenticar_estudiante, registrar_estudiante, existe_email, inicio_sesion_admin
 from app.dependencias import ConnectionDep
 from app.esquemas import crear_estudiante
 
@@ -42,6 +42,27 @@ async def login(
     if user is None:
         return RedirectResponse(url="/inicio-sesion?error=1", status_code=status.HTTP_303_SEE_OTHER)
     return RedirectResponse(url="/seleccionatuprofesor", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@router.post("/login-admin")
+async def login_admin(
+    conn: ConnectionDep,
+    email: str = Form(...),
+    contrasenna: str = Form(...),
+):
+    try:
+        user = await inicio_sesion_admin(conn, email, contrasenna)
+    except Exception as e:
+        logger.error(f"Error de conexión a la base de datos durante login: {e}")
+        return RedirectResponse(url="/administrador/iniciar-sesion?error=1", status_code=status.HTTP_303_SEE_OTHER)
+    if user is None:
+        return RedirectResponse(url="/administrador/iniciar-sesion?error=1", status_code=status.HTTP_303_SEE_OTHER)
+    return RedirectResponse(url="/administrador", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@router.get("/administrador/iniciar-sesion")
+async def admin_login(request: Request):
+    return templates.TemplateResponse(request=request, name="administrador-iniciar-sesion.html", context={})
 
 @router.post("/nuevo-usuario")
 async def nuevo_usuario(

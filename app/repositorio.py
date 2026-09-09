@@ -5,6 +5,13 @@ async def inicio_sesion(conn, email: str, contrasenna: str) -> dict | None:
     )
     return dict(row) if row else None
 
+async def inicio_sesion_admin(conn, email: str, contrasenna: str) -> dict | None:
+    row = await conn.fetchrow(
+        "SELECT email, contrasenna FROM administradores WHERE email = $1 AND contrasenna = $2",
+        email, contrasenna
+    )
+    return dict(row) if row else None
+
 async def existe_email(conn, email: str) -> bool:
     row = await conn.fetchrow("SELECT 1 FROM estudiantes WHERE email = $1", email)
     return row is not None

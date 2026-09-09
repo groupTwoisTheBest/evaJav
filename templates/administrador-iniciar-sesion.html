@@ -1,0 +1,44 @@
+2{% extends "base.html" %}
+{% block title %}Evalua Javiera-administrador{% endblock %}
+
+
+{% block content %}
+
+    
+
+    <nav class="nav">
+        <div class="brand">Evaluación <span>Docente</span></div>
+    </nav>
+
+    <main class="wrap narrow">
+
+<div class="card center">
+    <h2>Ingreso administrador</h2>
+    <p class="muted">Llena los campos para ingresar.</p>
+
+    <form action="/login-admin" method="POST">
+            <label for="email">Email</label>
+            <input class="input"id="email" name="email" type="text" placeholder="ingresa tu correo electrónico" required>
+            <label for="contrasenna">Contraseña</label>
+            <input class="input"id="contrasenna" name="contrasenna" type="password" placeholder="Ingresa tu contraseña" required>
+        <button class="btn">Entrar</button>
+        
+        {% if error %}
+        <p style="color: red;">Credenciales incorrectas</p>
+        {% endif %}
+
+    </form>
+
+
+</div>
+
+    
+
+</main>
+
+{% endblock %}
+
+
+
+
+

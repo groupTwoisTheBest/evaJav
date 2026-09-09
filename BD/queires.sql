@@ -27,18 +27,11 @@ VALUES ('$1', '$2', '$3', $4);
 -- Listar las asignaciones (profesor + materia) pendientes de
 -- evaluar por un estudiante, solo si el periodo está abierto
 -- y el estudiante todavía no ha votado por esa asignación.
-SELECT
-    i.id_asignacion,
-    m.nombre           AS profesor,
-    mat.nombre_materia AS materia
-FROM inscripciones i
-JOIN asignaciones a ON a.id = i.id_asignacion
-JOIN maestros     m ON m.id = a.id_profesor
-JOIN materias   mat ON mat.id = a.id_materia
-JOIN periodos     p ON p.id = a.id_periodo
-WHERE i.id_estudiante = $1
-  AND i.ya_voto = $2
-  AND p.estado = '$3';
+SELECT maestros.nombre FROM inscripciones 
+JOIN asignaciones ON inscripciones.id_asignacion = asignaciones.id
+JOIN estudiantes ON inscripciones.id_estudiante = estudiantes.id
+JOIN maestros ON asignaciones.id_profesor = maestros.id
+WHERE inscripciones.ya_voto = false;
 
 -- Registrar una evaluación anónima. Nótese que esta sentencia
 -- nunca recibe el id del estudiante: solo el id de la

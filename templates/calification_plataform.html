@@ -3,19 +3,27 @@
 {% block script %} <script src="../static/js/cal_plataform.js" defer></script> {% endblock script %}
 {% block content %}
 
-<a href="/seleccionatuprofesor" class="btn-back">Volver</a>
+    <nav class="nav">
+        <div class="brand">Evaluación <span>Docente</span></div>
+        <div class="nav-links">
+                <a href="/inicio-sesion" class="btn-back">Volver</a>
+                <span class="nav-user">Juan Pérez</span>
+            
+        </div>
+    </nav>
 
+<main class="wrap ">
     <form id="calification" action="/calificaElProfesor" method="post">
-        <input type="hidden" name="maestro" value="{{ maestro }}">
-        <legend>Evaluando a: {{ maestro }}</legend>
+        <input class="input" type="hidden" name="maestro" value="{{ maestro }}">
+        <h2>Evaluando a: {{ maestro }}</h2>
 
         {% if error %}
         <p class="error">{{ error }}</p>
         {% endif %}
 
+    <div class="card center">
         <label for="explicationsTopics">Explicación del tema</label>
-
-            <select id="explicationsTopics" name="explicationsTopics" required>
+            <select class="input" id="explicationsTopics" name="explicationsTopics" required>
                 <option value="">Nota</option>
                 <option value="Malo">Malo</option>
                 <option value="Regular">Regular</option>
@@ -28,7 +36,7 @@
 
 
 
-            <select id="actitudinal" name="actitudinal" required>
+            <select class="input" id="actitudinal" name="actitudinal" required>
                 <option value="">Nota</option>
                 <option value="Malo">Malo</option>
                 <option value="Regular">Regular</option>
@@ -37,21 +45,21 @@
             </select>
 
 
-        <label for="classActivity" class="track">
-        Actividades de clase
-        </label>
+        <label for="classActivity" class="track">Actividades de clase</label>
 
 
-            <select id="classActivity" name="classActivity" required>
+            <select class="input" id="classActivity" name="classActivity" required>
                 <option value="">Nota</option>
                 <option value="Malo">Malo</option>
                 <option value="Regular">Regular</option>
                 <option value="Bien">Bien</option>
                 <option value="Excelente">Excelente</option>
             </select>
+            <button class="btn" type="submit">Enviar</button>
+        </div>
+</main>
 
-    <button type="submit">Enviar</button>
-
-    </form>
+<footer class="foot">Tus respuestas son anónimas: los reportes solo muestran promedios.</footer>
+</form>
 
 {% endblock %}

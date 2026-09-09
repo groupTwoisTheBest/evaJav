@@ -3,15 +3,29 @@
 
 {% block content %}
 
-    <form>
-        
+    <nav class="nav">
+        <div class="brand">Evaluación <span>Docente</span></div>
+            <div class="nav-links">
+                <a href="/inicio-sesion" class="btn-back">Volver</a>
+                <span class="nav-user">Juan Pérez</span>
+            </div>
+        </div>
+    </nav>
 
-            <p>
+<main class="wrap ">
+<form>
+    <div class="card center">
+        <p>
             <h2>Certificado de Evaluación</h2>Gracias por evaluar a tu profesor, puedes regresar a la página anterior.</strong>  
-            </p>
-        <a href="/seleccionatuprofesor">
-        <input type="button" value="Regresar">
-        </a>
-    </form>
-    
+        </p>
+
+    <a href="/seleccionatuprofesor">
+        <input class="btn" type="button" value="Regresar">
+    </a>
+
+    </div>
+
+</form>
+</main>
+<footer class="foot">Tus respuestas son anónimas: los reportes solo muestran promedios.</footer>
 {% endblock %}

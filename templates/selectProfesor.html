@@ -3,30 +3,52 @@
 {% block script %} <script src="../static/js/sele_prof.js" defer></script> {% endblock script %}
 {% block content %}
 
-<a href="/inicio-sesion" class="btn-back">Volver</a>
+    <nav class="nav">
+        <div class="brand">Evaluación <span>Docente</span></div>
+        <div class="nav-links">
+                <a href="/inicio-sesion" class="btn-back">Volver</a>
+                <span class="nav-user">Juan Pérez</span>
+            
+        </div>
+    </nav>
 
+
+<main class="wrap ">
     <form id="Selectormestro" action="/seleccionatuprofesor" method="post">
-        <legend>
-            David Gomez Arteaga
-        </legend>
-
         {% if error %}
         <p class="error">{{ error }}</p>
         {% endif %}
 
-        <label for="maestro" >¿A quién quieres evaluar?</label>
-            <select id="maestro" name="maestro" required>
+<div class="head">
+    <h2>Hola, Juan</h2>
+    <p class="muted mb-0">Evalúa con honestidad a los profesores de tu grupo. Cada evaluación es anónima.</p>
+    
+    <p class="small mt mb-0">
+        <span class="badge ok vivo">Periodo abierto</span>
+        <span class="muted">cierra el 14/09/2026 a las 12:30</span>
+    </p>
+</div>
+
+<div class="grid">
+
+    <div class="card center">
+        <h2 for="maestro" >¿A quién quieres evaluar?</h2>
+            <select class="input" id="maestro" name="maestro" required>
                 <option value="">Elige a un maestro</option>
                 <option value="Lenny">Lenny</option>
                 <option value="Erika">Erika</option>
                 <option value="Fredy">Freddy</option>
             </select>
+        <button class="btn mt" type="submit" >seguir</button>
+    </div>
 
-        <button type="submit" >seguir</button>
+</div>
 
-        
-    </form>
+</main>
 
+<footer class="foot">Tus respuestas son anónimas: los reportes solo muestran promedios.</footer>
+
+</form>
 {% endblock %}
 
 

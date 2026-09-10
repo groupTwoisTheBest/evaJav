@@ -1,5 +1,5 @@
 from app.dependencias import APIRouter, Depends, Request, Form, status, RedirectResponse, PlainTextResponse, HTMLResponse, Jinja2Templates, logger
-from app.repositorio import inicio_sesion as autenticar_estudiante, registrar_estudiante, existe_email, inicio_sesion_admin, select_profesor
+from app.repositorio import inicio_sesion as autenticar_estudiante, registrar_estudiante, existe_email, inicio_sesion_admin, select_profesor,nombre_estudiante
 from app.dependencias import ConnectionDep
 from app.esquemas import crear_estudiante
 from app.seguridad import create_token, verify_token
@@ -33,7 +33,8 @@ async def registrarse_post(nombre: str = Form(...), contrasenna: str = Form(...)
 async def login(
     conn: ConnectionDep,
     email: str = Form(...),
-    contrasenna: str = Form(...),
+    contrasenna: str = Form(...)
+
 ):
     try:
         user = await autenticar_estudiante(conn, email, contrasenna)
@@ -42,6 +43,7 @@ async def login(
         return RedirectResponse(url="/inicio-sesion?error=1", status_code=status.HTTP_303_SEE_OTHER)
     if user is None:
         return RedirectResponse(url="/inicio-sesion?error=1", status_code=status.HTTP_303_SEE_OTHER)
+
 
     token = await create_token(user["email"])
     response = RedirectResponse(url="/seleccionatuprofesor", status_code=status.HTTP_303_SEE_OTHER)
@@ -87,19 +89,24 @@ async def nuevo_usuario(
 
 
 @router.get("/seleccionatuprofesor", response_class=HTMLResponse)
-async def read_seleccionatuprofesor(request: Request, conn: ConnectionDep):
+async def read_seleccionatuprofesor(request: Request, conn: ConnectionDep, nombre: str | None = None):
     token = request.cookies.get("token")
     email = verify_token(token) if token else None
+    
+
+    
+
     if not email:
-        return RedirectResponse(url="/inicio-sesion", status_code=status.HTTP_303_SEE_OTHER)
+        return RedirectResponse(url="/inicio-sesion?error=1", status_code=status.HTTP_303_SEE_OTHER)
 
     profesores = await select_profesor(conn, email)
-    if not profesores:
+    nombre = await nombre_estudiante(conn, email)
+    if not profesores or not nombre:
         return logger.warning(f"No se encontraron profesores para el estudiante con email: {email}")
     return templates.TemplateResponse(
         request=request,
         name="selectProfesor.html",
-        context={"profesores": profesores}
+        context={"profesores": profesores, "nombre": nombre}
     )
 
 

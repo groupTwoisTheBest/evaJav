@@ -34,7 +34,7 @@ async def registrar_estudiante(conn, nombre: str, email: str, contrasenna: str, 
             FROM asignaciones
             JOIN periodos ON periodos.id = asignaciones.id_periodo
             WHERE asignaciones.id_grado = $2
-              AND periodos.estado = 'abierto'
+                AND periodos.estado = 'abierto'
             """,
             estudiante_id, grado
         )
@@ -48,6 +48,13 @@ LEFT JOIN inscripciones
     ON inscripciones.id_asignacion = asignaciones.id
     AND inscripciones.id_estudiante = estudiantes.id
 WHERE estudiantes.email = $1
-  AND (inscripciones.ya_voto IS NULL OR inscripciones.ya_voto = false)
+    AND (inscripciones.ya_voto IS NULL OR inscripciones.ya_voto = false)
     """, email)
     return [dict(row) for row in rows] if rows else []
+
+async def nombre_estudiante(conn, email: str) -> dict | None:
+    row = await conn.fetchrow(
+        "SELECT nombre FROM estudiantes WHERE email = $1",
+        email
+    )
+    return dict(row) if row else None

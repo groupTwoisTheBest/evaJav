@@ -7,4 +7,4 @@ loguru
 uvicorn
 PyJWT
 email-validator
-pwdlib
+pwdlib[argon2]

@@ -6,10 +6,12 @@ from datetime import datetime, timedelta, timezone
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 key = os.getenv("JWT_SECRET")
+if not key:
+    raise RuntimeError("La variable de entorno JWT_SECRET no está configurada.")
 algorithm = "HS256"
 exp_minutes=30
 
-async def create_token(email: str) -> str:
+def create_token(email: str) -> str:
 
     payload={
     "email": email,
@@ -17,7 +19,7 @@ async def create_token(email: str) -> str:
     }
     return jwt.encode(payload, key, algorithm=algorithm)
 
-def verify_token(token: str) -> tuple[str, str] | None:
+def verify_token(token: str) -> str | None:
     try:
         payload = jwt.decode(token,key,algorithms=[algorithm])
         return payload.get("email")

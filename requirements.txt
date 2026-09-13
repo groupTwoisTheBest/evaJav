@@ -6,3 +6,4 @@ python-multipart
 loguru
 uvicorn
 PyJWT
+email-validator

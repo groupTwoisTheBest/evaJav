@@ -65,3 +65,42 @@ async def nombre_estudiante(conn, email: str) -> dict | None:
         email
     )
     return dict(row) if row else None
+
+
+async def registrar_calificacion(
+    conn, email: str, profesor: str,
+    explication: str, actitudinal: str, class_activity: str
+) -> None:
+    mapa = {"Malo": 1, "Regular": 2, "Bien": 3, "Excelente": 4}
+    profesor = profesor.strip()
+
+    async with conn.transaction():
+        asignaciones = await conn.fetch("""
+            SELECT a.id
+            FROM asignaciones a
+            JOIN maestros m ON m.id = a.id_profesor
+            JOIN estudiantes e ON e.id_grado = a.id_grado
+            JOIN periodos p ON p.id = a.id_periodo
+            JOIN inscripciones i ON i.id_asignacion = a.id AND i.id_estudiante = e.id
+            WHERE e.email = $1 AND m.nombre = $2
+                AND p.estado = 'abierto' AND i.ya_voto = false
+        """, email, profesor)
+
+        if not asignaciones:
+            raise ValueError("No se encontró la asignación para esta evaluación")
+
+        for a in asignaciones:
+            await conn.execute("""
+                INSERT INTO evaluaciones (id_asignacion, actitudinal, actividades, metodologia)
+                VALUES ($1, $2, $3, $4)
+            """, a["id"], mapa[actitudinal], mapa[class_activity], mapa[explication])
+
+        await conn.execute("""
+            UPDATE inscripciones SET ya_voto = true
+            WHERE id_estudiante = (SELECT id FROM estudiantes WHERE email = $1)
+            AND id_asignacion IN (
+                SELECT a.id FROM asignaciones a
+                JOIN maestros m ON m.id = a.id_profesor
+                WHERE m.nombre = $2
+            )
+        """, email, profesor)

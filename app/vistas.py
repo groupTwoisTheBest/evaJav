@@ -1,7 +1,6 @@
 from typing import Annotated
-from app.dependencias import APIRouter, Depends, Request, Form, status, RedirectResponse, PlainTextResponse, HTMLResponse, Jinja2Templates, logger
-from app.repositorio import inicio_sesion as autenticar_estudiante, registrar_estudiante, existe_email, inicio_sesion_admin, select_profesor,nombre_estudiante
-from app.dependencias import ConnectionDep
+from app.dependencias import APIRouter, Depends, Request, Form, status, RedirectResponse, PlainTextResponse, HTMLResponse, Jinja2Templates, logger, ConnectionDep, CurrentUserDep
+from app.repositorio import inicio_sesion as autenticar_estudiante, registrar_estudiante, existe_email, inicio_sesion_admin, select_profesor, nombre_estudiante, registrar_calificacion
 from app.esquemas import CrearEstudiante, LoginSchema, CalificacionSchema, RegistroSchema, SeleccionProfesorSchema
 from app.seguridad import create_token, verify_token
 
@@ -83,16 +82,7 @@ async def nuevo_usuario(
 
 
 @router.get("/seleccionatuprofesor", response_class=HTMLResponse)
-async def read_seleccionatuprofesor(request: Request, conn: ConnectionDep, nombre: str | None = None):
-    token = request.cookies.get("token")
-    email = verify_token(token) if token else None
-    
-
-    
-
-    if not email:
-        return RedirectResponse(url="/inicio-sesion?error=1", status_code=status.HTTP_303_SEE_OTHER)
-
+async def read_seleccionatuprofesor(request: Request, conn: ConnectionDep, email: CurrentUserDep):
     profesores = await select_profesor(conn, email)
     nombre = await nombre_estudiante(conn, email)
     if not profesores or not nombre:
@@ -106,17 +96,19 @@ async def read_seleccionatuprofesor(request: Request, conn: ConnectionDep, nombr
 
 
 @router.post("/seleccionatuprofesor")
-async def seleccionar_profesor(request: Request, datos: Annotated[SeleccionProfesorSchema, Form()]):
+async def seleccionar_profesor(request: Request, conn: ConnectionDep, email: CurrentUserDep, datos: Annotated[SeleccionProfesorSchema, Form()]):
     if not datos.maestro:
+        nombre = await nombre_estudiante(conn, email)
         return templates.TemplateResponse(
             request=request,
             name="selectProfesor.html",
-            context={"error": "Selecciona un profesor"}
+            context={"error": "Selecciona un profesor", "nombre": nombre}
         )
+    nombre = await nombre_estudiante(conn, email)
     return templates.TemplateResponse(
         request=request,
         name="calification_plataform.html",
-        context={"maestro": datos.maestro}
+        context={"maestro": datos.maestro, "nombre": nombre["nombre"] if nombre else ""}
     )
 
 
@@ -145,19 +137,39 @@ async def configuracion(request: Request):
     return templates.TemplateResponse(request=request, name="configuracion.html", context={})
 
 
-@router.get("/calificaElProfesor", response_class=HTMLResponse)
-async def read_calificaElProfesor(request: Request):
-    return templates.TemplateResponse(request=request, name="calification_plataform.html", context={"maestro": ""})
-
-
 @router.post("/calificaElProfesor")
 async def enviar_calificacion(
     request: Request,
+    conn: ConnectionDep,
+    email: CurrentUserDep,
     datos: Annotated[CalificacionSchema, Form()]
 ):
-    return RedirectResponse(url="/Agradecimiento", status_code=status.HTTP_303_SEE_OTHER)
+    try:
+        await registrar_calificacion(
+            conn, email, datos.maestro,
+            datos.explicationsTopics, datos.actitudinal, datos.classActivity
+        )
+    except Exception as e:
+        logger.error(f"Error al registrar calificación: {e}")
+        nombre = await nombre_estudiante(conn, email)
+        return templates.TemplateResponse(
+            request=request,
+            name="calification_plataform.html",
+            context={"maestro": datos.maestro, "nombre": nombre["nombre"] if nombre else "", "error": "Error al registrar la calificación"}
+        )
+    nombre = await nombre_estudiante(conn, email)
+    return templates.TemplateResponse(
+        request=request,
+        name="certificado.html",
+        context={"nombre": nombre["nombre"] if nombre else ""}
+    )
 
 
 @router.get("/Agradecimiento", response_class=HTMLResponse)
-async def read_agradecimiento(request: Request):
-    return templates.TemplateResponse(request=request, name="certificado.html", context={})
+async def read_agradecimiento(request: Request, conn: ConnectionDep, email: CurrentUserDep):
+    nombre = await nombre_estudiante(conn, email)
+    return templates.TemplateResponse(
+        request=request,
+        name="certificado.html",
+        context={"nombre": nombre["nombre"] if nombre else ""}
+    )

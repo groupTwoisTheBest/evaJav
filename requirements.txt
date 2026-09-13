@@ -7,3 +7,4 @@ loguru
 uvicorn
 PyJWT
 email-validator
+pwdlib

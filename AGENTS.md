@@ -1,8 +1,7 @@
 # AGENTS.md
 
-<<<<<<< HEAD
 ## What this is
-FastAPI + Jinja2 teacher evaluation app. Deployed on Vercel. PostgreSQL via psycopg2.
+FastAPI + Jinja2 teacher evaluation app. Deployed on Vercel. PostgreSQL via asyncpg. Password hashing con pwdlib[argon2]. Autenticación via JWT (PyJWT).
 
 ## Run
     uvicorn main:app --reload
@@ -12,52 +11,79 @@ FastAPI + Jinja2 teacher evaluation app. Deployed on Vercel. PostgreSQL via psyc
 
 Requires live PostgreSQL. Set `DATABASE_URL` (or `POSTGRES_URL`) in `.env`.
 
+## Dependencies
+
+- `fastapi` + `jinja2` — web framework + templates
+- `asyncpg` — driver async de PostgreSQL
+- `pwdlib[argon2]` — hashing de contraseñas (Argon2id)
+- `PyJWT` — creación y verificación de tokens JWT
+- `loguru` — logging
+- `python-dotenv` — carga de `.env`
+
 ## Gotchas
 
-- **Auth is hardcoded** in `app/routes.py` (POST `/login`) and `static/js/index.js` (client-side). No env-based secrets — be careful not to expose or modify these carelessly.
-- **No lint/format/typecheck** is configured for this repo.
+- **Contraseñas en texto plano (PENDIENTE):** Actualmente `app/repositorio.py` almacena y compara contraseñas sin hashear. Se debe implementar hashing con `pwdlib` (ya instalado como dependencia en `pyproject.toml`).
+- **No lint/format/typecheck** está configurado para este repo.
+- **No hay tests** configurados aún.
+- **Schema SQL menciona bcrypt** (`schema.sql:30`) pero se usa `pwdlib` con Argon2id.
+
+## Password Hashing
+
+Usar `pwdlib` con hasher Argon2id. API principal:
+
+```python
+from pwdlib import PasswordHash
+
+# Crear instancia (recomendada: usa Argon2id con params por defecto)
+password_hasher = PasswordHash.recommended()
+
+# Hashear contraseña
+hashed = password_hasher.hash("mi_contraseña")
+
+# Verificar contraseña (orden: password, hash)
+is_valid = password_hasher.verify("correcta", hashed)  # True
+is_valid = password_hasher.verify("incorrecta", hashed)  # False
+
+# Verificar + rehashear si los parámetros cambiaron
+valid, updated_hash = password_hasher.verify_and_update("correcta", hashed)
+if updated_hash:
+    # Actualizar en DB con updated_hash
+```
+
+### Integración en el código
+
+**`app/repositorio.py`** — cambios necesarios:
+- `registrar_estudiante()`: hashear antes de INSERT
+- `inicio_sesion()`: buscar por email, luego `verify()` con el hash de la DB
+- `inicio_sesion_admin()`: mismo patrón
+
+**Patrón recomendado para login:**
+```python
+async def inicio_sesion(conn, email: str, contrasenna: str) -> dict | None:
+    row = await conn.fetchrow(
+        "SELECT email, contrasenna FROM estudiantes WHERE email = $1",
+        email
+    )
+    if row is None:
+        return None
+    if not password_hasher.verify(contrasenna, row["contrasenna"]):
+        return None
+    return dict(row)
+```
+
+**Patrón recomendado para registro:**
+```python
+async def registrar_estudiante(conn, nombre, email, contrasenna, grado):
+    hashed = password_hasher.hash(contrasenna)
+    async with conn.transaction():
+        estudiante_id = await conn.fetchval(
+            "INSERT INTO estudiantes (nombre, contrasenna, email, id_grado) VALUES ($1, $2, $3, $4) RETURNING id",
+            nombre, hashed, email, grado
+        )
+        # ... inscripciones
+```
 
 ## Rules
 
 - **Pedir permiso antes de modificar archivos**: Cada vez que se modifique un archivo, se debe solicitar permiso al usuario antes de aplicar los cambios.
 - **Testear al finalizar procesos**: Cada vez que termine algún proceso o tarea, se debe ejecutar un testeo para verificar que todo funciona correctamente.
-=======
-This file contains essential guidance for developers working in this repository. It answers: "Would an agent likely miss this without help?"
-
-## Setup & Development
-
-- Run `npm install` to install all dependencies.
-- Use `npm run dev` to start the development server.
-- The project uses TypeScript; compiled artifacts are in `.next/` (Next.js) or `dist/`.
-
-## Architecture
-
-- Entry point is `src/main.ts` (for CLI tools) or `pages/index.tsx` (for web apps).
-- The app is organized into:
-  - `src/components/`: Reusable React components
-  - `src/lib/`: Core logic and utilities
-  - `src/pages/`: Page routes (Next.js)
-- All code is linted with ESLint; type checked with TypeScript.
-
-## Commands
-
-- Run tests with `npm test`.
-- Lint with `npm run lint`.
-- Format code with `npm run format`.
-- Type-check with `npm run typecheck`.
-- Build the project with `npm run build`.
-- Run a specific test file (e.g., `src/components/Button.test.tsx`) using `npm test src/components/Button.test.tsx`.
-
-## Testing
-
-- Unit and integration tests reside in `__tests__/` or alongside source files as `.test.tsx`.
-- Snapshot testing is used where relevant.
-- Tests requiring network services must be mocked appropriately.
-- The CI workflow runs lint, typecheck, test, and build in strict order.
-
-## Special Notes
-
-- Generated code (e.g., `.generated.ts`) must not be modified directly; they are overwritten on regeneration.
-- Migrations are placed in `migrations/` and must be run manually via `npm run migrate`.
-- Environment variables are loaded using dotenv; see `.env.example` for reference.
->>>>>>> c26b636a3ff9b4817884dc49469ec3efb5b36ec0

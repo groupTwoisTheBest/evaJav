@@ -1,16 +1,23 @@
+from app.seguridad import hash_password, verify_password
+
+
 async def inicio_sesion(conn, email: str, contrasenna: str) -> dict | None:
     row = await conn.fetchrow(
-        "SELECT email, contrasenna FROM estudiantes WHERE email = $1 AND contrasenna = $2",
-        email, contrasenna
+        "SELECT email, contrasenna FROM estudiantes WHERE email = $1",
+        email
     )
-    return dict(row) if row else None
+    if row and verify_password(contrasenna, row["contrasenna"]):
+        return dict(row)
+    return None
 
 async def inicio_sesion_admin(conn, email: str, contrasenna: str) -> dict | None:
     row = await conn.fetchrow(
-        "SELECT email, contrasenna FROM administradores WHERE email = $1 AND contrasenna = $2",
-        email, contrasenna
+        "SELECT email, contrasenna FROM administradores WHERE email = $1",
+        email
     )
-    return dict(row) if row else None
+    if row and verify_password(contrasenna, row["contrasenna"]):
+        return dict(row)
+    return None
 
 async def existe_email(conn, email: str) -> bool:
     row = await conn.fetchrow("SELECT 1 FROM estudiantes WHERE email = $1", email)
@@ -24,7 +31,7 @@ async def registrar_estudiante(conn, nombre: str, email: str, contrasenna: str, 
             VALUES ($1, $2, $3, $4)
             RETURNING id
             """,
-            nombre, contrasenna, email, grado
+            nombre, hash_password(contrasenna), email, grado
         )
 
         await conn.execute(

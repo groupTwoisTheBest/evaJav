@@ -12,13 +12,13 @@
 </head>
 <body>
     {% block nav %}
-    <nav>
+    <nav class="nav">
+    <div class="brand">
         <a href="/inicio-sesion" class="btn-back">Volver</a>
-        <ul>
-            <li><a href="/administrador">Inicio</a></li>
-            <li><a href="/gestionProfesores">Gestión de Profesores</a></li>
-            <li><a href="/centroEstadistico">Centro Estadístico</a></li>
-        </ul>
+            <a href="/administrador">Inicio</a>
+            <a href="/gestionProfesores">Gestión de Profesores</a>
+            <a href="/centroEstadistico">Centro Estadístico</a>
+    </div>
     </nav>
     {% endblock %}
     <main class="wrap narrow">

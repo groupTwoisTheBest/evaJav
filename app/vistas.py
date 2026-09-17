@@ -1,7 +1,8 @@
-from app.dependencias import APIRouter, Depends, Request, Form, status, RedirectResponse, PlainTextResponse, HTMLResponse, Jinja2Templates, logger
-from app.repositorio import inicio_sesion as autenticar_estudiante, registrar_estudiante, existe_email, inicio_sesion_admin
-from app.dependencias import ConnectionDep
-from app.esquemas import crear_estudiante
+from typing import Annotated
+from app.dependencias import APIRouter, Depends, Request, Form, status, RedirectResponse, PlainTextResponse, HTMLResponse, Jinja2Templates, logger, ConnectionDep, CurrentUserDep
+from app.repositorio import inicio_sesion as autenticar_estudiante, registrar_estudiante, existe_email, inicio_sesion_admin, select_profesor, nombre_estudiante, registrar_calificacion
+from app.esquemas import CrearEstudiante, LoginSchema, CalificacionSchema, RegistroSchema, SeleccionProfesorSchema
+from app.seguridad import create_token, verify_token
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -23,7 +24,7 @@ async def registrarse(request: Request):
 
 
 @router.post("/registrarse")
-async def registrarse_post(nombre: str = Form(...), contrasenna: str = Form(...)):
+async def registrarse_post(datos: Annotated[RegistroSchema, Form()]):
     # TODO: Implementar lógica de persistencia de registro (inserción en DB, hashing de contraseña, etc.)
     return PlainTextResponse("TODO: Implementar lógica de registro", status_code=501)
 
@@ -31,27 +32,31 @@ async def registrarse_post(nombre: str = Form(...), contrasenna: str = Form(...)
 @router.post("/login")
 async def login(
     conn: ConnectionDep,
-    email: str = Form(...),
-    contrasenna: str = Form(...),
+    datos: Annotated[LoginSchema, Form()]
 ):
     try:
-        user = await autenticar_estudiante(conn, email, contrasenna)
+        user = await autenticar_estudiante(conn, datos.email, datos.contrasenna)
     except Exception as e:
         logger.error(f"Error de conexión a la base de datos durante login: {e}")
         return RedirectResponse(url="/inicio-sesion?error=1", status_code=status.HTTP_303_SEE_OTHER)
     if user is None:
         return RedirectResponse(url="/inicio-sesion?error=1", status_code=status.HTTP_303_SEE_OTHER)
-    return RedirectResponse(url="/seleccionatuprofesor", status_code=status.HTTP_303_SEE_OTHER)
+
+
+    token = create_token(user["email"])
+    response = RedirectResponse(url="/seleccionatuprofesor", status_code=status.HTTP_303_SEE_OTHER)
+    response.set_cookie(key="token", value=token, httponly=True, samesite="lax", secure=True)  
+    return response
+
 
 
 @router.post("/login-admin")
 async def login_admin(
     conn: ConnectionDep,
-    email: str = Form(...),
-    contrasenna: str = Form(...),
+    datos: Annotated[LoginSchema, Form()],
 ):
     try:
-        user = await inicio_sesion_admin(conn, email, contrasenna)
+        user = await inicio_sesion_admin(conn, datos.email, datos.contrasenna)
     except Exception as e:
         logger.error(f"Error de conexión a la base de datos durante login: {e}")
         return RedirectResponse(url="/administrador/iniciar-sesion?error=1", status_code=status.HTTP_303_SEE_OTHER)
@@ -68,35 +73,42 @@ async def admin_login(request: Request):
 async def nuevo_usuario(
     request: Request,
     conn: ConnectionDep,
-    nombre: str = Form(...),
-    email: str = Form(...),
-    contrasenna: str = Form(...),
-    grado: int = Form(...)
+    datos: Annotated[CrearEstudiante, Form()],
 ):
-    if await existe_email(conn, email):
+    if await existe_email(conn, datos.email):
         return templates.TemplateResponse(request=request, name="registrarse.html", context={"error": "El correo ya está registrado."})
-    estudiante = crear_estudiante(nombre=nombre, email=email, contrasenna=contrasenna)
-    await registrar_estudiante(conn, estudiante.nombre, estudiante.email, estudiante.contrasenna, grado)
+    await registrar_estudiante(conn, datos.nombre, datos.email, datos.contrasenna, datos.grado)
     return templates.TemplateResponse(request=request, name="registrarse.html", context={"message": "Registrado exitosamente."})
 
 
 @router.get("/seleccionatuprofesor", response_class=HTMLResponse)
-async def read_seleccionatuprofesor(request: Request):
-    return templates.TemplateResponse(request=request, name="selectProfesor.html", context={})
+async def read_seleccionatuprofesor(request: Request, conn: ConnectionDep, email: CurrentUserDep):
+    profesores = await select_profesor(conn, email)
+    nombre = await nombre_estudiante(conn, email)
+    if not profesores or not nombre:
+        return logger.warning(f"No se encontraron profesores para el estudiante con email: {email}")
+    return templates.TemplateResponse(
+        request=request,
+        name="selectProfesor.html",
+        context={"profesores": profesores, "nombre": nombre}
+    )
+
 
 
 @router.post("/seleccionatuprofesor")
-async def seleccionar_profesor(request: Request, maestro: str = Form(...)):
-    if not maestro:
+async def seleccionar_profesor(request: Request, conn: ConnectionDep, email: CurrentUserDep, datos: Annotated[SeleccionProfesorSchema, Form()]):
+    if not datos.maestro:
+        nombre = await nombre_estudiante(conn, email)
         return templates.TemplateResponse(
             request=request,
             name="selectProfesor.html",
-            context={"error": "Selecciona un profesor"}
+            context={"error": "Selecciona un profesor", "nombre": nombre}
         )
+    nombre = await nombre_estudiante(conn, email)
     return templates.TemplateResponse(
         request=request,
         name="calification_plataform.html",
-        context={"maestro": maestro}
+        context={"maestro": datos.maestro, "nombre": nombre["nombre"] if nombre else ""}
     )
 
 
@@ -125,28 +137,39 @@ async def configuracion(request: Request):
     return templates.TemplateResponse(request=request, name="configuracion.html", context={})
 
 
-@router.get("/calificaElProfesor", response_class=HTMLResponse)
-async def read_calificaElProfesor(request: Request):
-    return templates.TemplateResponse(request=request, name="calification_plataform.html", context={"maestro": ""})
-
-
 @router.post("/calificaElProfesor")
 async def enviar_calificacion(
     request: Request,
-    maestro: str = Form(...),
-    explicationsTopics: str = Form(...),
-    actitudinal: str = Form(...),
-    classActivity: str = Form(...)
+    conn: ConnectionDep,
+    email: CurrentUserDep,
+    datos: Annotated[CalificacionSchema, Form()]
 ):
-    if not explicationsTopics or not actitudinal or not classActivity:
+    try:
+        await registrar_calificacion(
+            conn, email, datos.maestro,
+            datos.explicationsTopics, datos.actitudinal, datos.classActivity
+        )
+    except Exception as e:
+        logger.error(f"Error al registrar calificación: {e}")
+        nombre = await nombre_estudiante(conn, email)
         return templates.TemplateResponse(
             request=request,
             name="calification_plataform.html",
-            context={"maestro": maestro, "error": "Selecciona una nota para cada casilla"}
+            context={"maestro": datos.maestro, "nombre": nombre["nombre"] if nombre else "", "error": "Error al registrar la calificación"}
         )
-    return RedirectResponse(url="/Agradecimiento", status_code=status.HTTP_303_SEE_OTHER)
+    nombre = await nombre_estudiante(conn, email)
+    return templates.TemplateResponse(
+        request=request,
+        name="certificado.html",
+        context={"nombre": nombre["nombre"] if nombre else ""}
+    )
 
 
 @router.get("/Agradecimiento", response_class=HTMLResponse)
-async def read_agradecimiento(request: Request):
-    return templates.TemplateResponse(request=request, name="certificado.html", context={})
+async def read_agradecimiento(request: Request, conn: ConnectionDep, email: CurrentUserDep):
+    nombre = await nombre_estudiante(conn, email)
+    return templates.TemplateResponse(
+        request=request,
+        name="certificado.html",
+        context={"nombre": nombre["nombre"] if nombre else ""}
+    )

@@ -7,7 +7,7 @@
         <div class="brand">Evaluación <span>Docente</span></div>
         <div class="nav-links">
                 <a href="/inicio-sesion" class="btn-back">Volver</a>
-                <span class="nav-user">Juan Pérez</span>
+                <span class="nav-user">{{nombre.nombre}}</span>
             
         </div>
     </nav>
@@ -20,7 +20,7 @@
         {% endif %}
 
 <div class="head">
-    <h2>Hola, Juan</h2>
+    <h2>Hola, {{nombre.nombre}}</h2>
     <p class="muted mb-0">Evalúa con honestidad a los profesores de tu grupo. Cada evaluación es anónima.</p>
     
     <p class="small mt mb-0">
@@ -35,9 +35,11 @@
         <h2 for="maestro" >¿A quién quieres evaluar?</h2>
             <select class="input" id="maestro" name="maestro" required>
                 <option value="">Elige a un maestro</option>
-                <option value="Lenny">Lenny</option>
-                <option value="Erika">Erika</option>
-                <option value="Fredy">Freddy</option>
+                {% if profesores %}
+                    {% for profesor in profesores %}
+                        <option value="{{profesor.nombre}}">{{profesor.nombre}}</option>
+                    {% endfor %}
+                {% endif %}
             </select>
         <button class="btn mt" type="submit" >seguir</button>
     </div>

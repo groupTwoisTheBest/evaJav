@@ -199,7 +199,7 @@ CREATE INDEX idx_inscripciones_id_asignacion ON inscripciones (id_asignacion);
 -- evaluación con la identidad de quien la realizó. El control
 -- de "quién ya votó" vive en "inscripciones", no aquí.
 --
--- Escala de cada criterio: 1 = Malo, 2 = Bien, 3 = Excelente.
+-- Escala de cada criterio: 1 = Malo, 2 = Regular, 3 = Bien, 4 = Excelente.
 -- La aplicación muestra las etiquetas cualitativas; aquí se
 -- guarda el valor numérico para poder calcular promedios (AVG).
 -- ------------------------------------------------------------
@@ -218,11 +218,11 @@ CREATE TABLE evaluaciones (
         FOREIGN KEY (id_asignacion) REFERENCES asignaciones (id),
 
     CONSTRAINT evaluaciones_actitudinal_check
-        CHECK (actitudinal BETWEEN 1 AND 3),
+        CHECK (actitudinal BETWEEN 1 AND 4),
     CONSTRAINT evaluaciones_actividades_check
-        CHECK (actividades BETWEEN 1 AND 3),
+        CHECK (actividades BETWEEN 1 AND 4),
     CONSTRAINT evaluaciones_metodologia_check
-        CHECK (metodologia BETWEEN 1 AND 3)
+        CHECK (metodologia BETWEEN 1 AND 4)
 );
 
 CREATE INDEX idx_evaluaciones_id_asignacion ON evaluaciones (id_asignacion);

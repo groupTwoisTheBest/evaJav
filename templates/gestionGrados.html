@@ -1,0 +1,132 @@
+{% extends "baseAdministrador.html" %}
+{% block title %}Gestión de Grados{% endblock %}
+
+{% block content %}
+
+<div class="head">
+    <div class="head-row">
+        <div>
+            <p class="kicker">Gestión</p>
+            <h1>Grados</h1>
+        </div>
+        <a href="/gestionGrados/nuevo" class="btn auto">+ Nuevo Grado</a>
+    </div>
+</div>
+
+<!-- Estadísticas rápidas -->
+<div class="grid">
+    <div class="card">
+        <p class="muted">Total Grados</p>
+        <p class="stat">6</p>
+        <span class="badge ok">Todos activos</span>
+    </div>
+    <div class="card">
+        <p class="muted">Total Estudiantes</p>
+        <p class="stat">1,200</p>
+        <span class="badge">Promedio: 200 por grado</span>
+    </div>
+    <div class="card">
+        <p class="muted">Total Profesores</p>
+        <p class="stat">150</p>
+        <span class="badge neutral">25 por grado</span>
+    </div>
+</div>
+
+<!-- Lista de grados -->
+<div class="head">
+    <h2>Grados Registrados</h2>
+</div>
+
+<div class="grid">
+    <div class="card">
+        <div class="grado-header">
+            <p class="muted">1° Básico</p>
+            <span class="badge ok">Activo</span>
+        </div>
+        <p class="stat">210</p>
+        <p class="small muted">estudiantes</p>
+        <hr class="divider">
+        <p class="small muted">28 profesores asignados</p>
+        <div class="row-actions mt">
+            <a href="/gestionGrados/1/editar" class="btn sm ghost">Editar</a>
+            <button class="btn sm danger">Eliminar</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="grado-header">
+            <p class="muted">2° Básico</p>
+            <span class="badge ok">Activo</span>
+        </div>
+        <p class="stat">195</p>
+        <p class="small muted">estudiantes</p>
+        <hr class="divider">
+        <p class="small muted">26 profesores asignados</p>
+        <div class="row-actions mt">
+            <a href="/gestionGrados/2/editar" class="btn sm ghost">Editar</a>
+            <button class="btn sm danger">Eliminar</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="grado-header">
+            <p class="muted">3° Básico</p>
+            <span class="badge ok">Activo</span>
+        </div>
+        <p class="stat">220</p>
+        <p class="small muted">estudiantes</p>
+        <hr class="divider">
+        <p class="small muted">30 profesores asignados</p>
+        <div class="row-actions mt">
+            <a href="/gestionGrados/3/editar" class="btn sm ghost">Editar</a>
+            <button class="btn sm danger">Eliminar</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="grado-header">
+            <p class="muted">4° Básico</p>
+            <span class="badge ok">Activo</span>
+        </div>
+        <p class="stat">185</p>
+        <p class="small muted">estudiantes</p>
+        <hr class="divider">
+        <p class="small muted">24 profesores asignados</p>
+        <div class="row-actions mt">
+            <a href="/gestionGrados/4/editar" class="btn sm ghost">Editar</a>
+            <button class="btn sm danger">Eliminar</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="grado-header">
+            <p class="muted">5° Básico</p>
+            <span class="badge ok">Activo</span>
+        </div>
+        <p class="stat">200</p>
+        <p class="small muted">estudiantes</p>
+        <hr class="divider">
+        <p class="small muted">22 profesores asignados</p>
+        <div class="row-actions mt">
+            <a href="/gestionGrados/5/editar" class="btn sm ghost">Editar</a>
+            <button class="btn sm danger">Eliminar</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="grado-header">
+            <p class="muted">6° Básico</p>
+            <span class="badge ok">Activo</span>
+        </div>
+        <p class="stat">190</p>
+        <p class="small muted">estudiantes</p>
+        <hr class="divider">
+        <p class="small muted">20 profesores asignados</p>
+        <div class="row-actions mt">
+            <a href="/gestionGrados/6/editar" class="btn sm ghost">Editar</a>
+            <button class="btn sm danger">Eliminar</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

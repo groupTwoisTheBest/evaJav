@@ -1,0 +1,25 @@
+{% extends "baseAdministrador.html" %}
+{% block title %}{{ titulo|default('Nuevo Grado') }}{% endblock %}
+
+{% block content %}
+
+<div class="head">
+    <p class="kicker">Gestión de Grados</p>
+    <h1>{{ titulo|default('Nuevo Grado') }}</h1>
+</div>
+
+<div class="card mid">
+    <form action="{{ accion|default('/gestionGrados/nuevo') }}" method="POST">
+        <label for="nombre_grado">Nombre del Grado</label>
+        <input class="input" id="nombre_grado" name="nombre_grado" type="text" 
+               placeholder="Ej: 7° Básico" 
+               value="{{ grado.nombre_grado|default('') }}" required>
+
+        <div class="row-actions mt">
+            <button type="submit" class="btn">Guardar</button>
+            <a href="/gestionGrados" class="btn ghost">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

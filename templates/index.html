@@ -20,7 +20,7 @@
             <label for="email">Email</label>
             <input class="input"id="email" name="email" type="text" placeholder="ingresa tu correo electrónico" required>
             <label for="contrasenna">Contraseña</label>
-            <input class="input"id="contrasenna" name="contrasenna" type="password" placeholder="Ingresa tu contraseña" required>
+            <input class="input"id="contrasenna" name="contrasenna" type="password" placeholder="Ingresa tu contraseña" required minlength="8" maxlength="100">
         <button class="btn">Entrar</button>
         
         {% if error %}

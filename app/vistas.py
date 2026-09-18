@@ -137,6 +137,106 @@ async def configuracion(request: Request):
     return templates.TemplateResponse(request=request, name="configuracion.html", context={})
 
 
+# ============ GESTIÓN DE ESTUDIANTES ============
+
+@router.get("/gestionEstudiantes", response_class=HTMLResponse)
+async def read_gestion_estudiantes(request: Request):
+    return templates.TemplateResponse(request=request, name="gestionEstudiantes.html", context={})
+
+@router.get("/gestionEstudiantes/nuevo", response_class=HTMLResponse)
+async def nuevo_estudiante_form(request: Request):
+    return templates.TemplateResponse(request=request, name="gestionEstudiantesForm.html", context={"titulo": "Nuevo Estudiante", "accion": "/gestionEstudiantes/nuevo"})
+
+@router.post("/gestionEstudiantes/nuevo")
+async def crear_estudiante(request: Request):
+    return RedirectResponse(url="/gestionEstudiantes", status_code=status.HTTP_303_SEE_OTHER)
+
+@router.get("/gestionEstudiantes/{id}", response_class=HTMLResponse)
+async def ver_estudiante(request: Request, id: int):
+    return templates.TemplateResponse(request=request, name="gestionEstudiantesForm.html", context={"titulo": "Editar Estudiante", "accion": f"/gestionEstudiantes/{id}/editar"})
+
+@router.get("/gestionEstudiantes/{id}/editar", response_class=HTMLResponse)
+async def editar_estudiante_form(request: Request, id: int):
+    return templates.TemplateResponse(request=request, name="gestionEstudiantesForm.html", context={"titulo": "Editar Estudiante", "accion": f"/gestionEstudiantes/{id}/editar"})
+
+@router.post("/gestionEstudiantes/{id}/editar")
+async def actualizar_estudiante(request: Request, id: int):
+    return RedirectResponse(url="/gestionEstudiantes", status_code=status.HTTP_303_SEE_OTHER)
+
+@router.post("/gestionEstudiantes/{id}/eliminar")
+async def eliminar_estudiante(request: Request, id: int):
+    return RedirectResponse(url="/gestionEstudiantes", status_code=status.HTTP_303_SEE_OTHER)
+
+
+# ============ GESTIÓN DE PROFESORES ============
+
+@router.get("/gestionProfesores/nuevo", response_class=HTMLResponse)
+async def nuevo_profesor_form(request: Request):
+    return templates.TemplateResponse(request=request, name="gestionProfesoresForm.html", context={"titulo": "Nuevo Profesor", "accion": "/gestionProfesores/nuevo"})
+
+@router.post("/gestionProfesores/nuevo")
+async def crear_profesor(request: Request):
+    return RedirectResponse(url="/gestionProfesores", status_code=status.HTTP_303_SEE_OTHER)
+
+@router.get("/gestionProfesores/{id}", response_class=HTMLResponse)
+async def ver_profesor(request: Request, id: int):
+    return templates.TemplateResponse(request=request, name="gestionProfesoresInformacion.html", context={})
+
+@router.get("/gestionProfesores/{id}/editar", response_class=HTMLResponse)
+async def editar_profesor_form(request: Request, id: int):
+    return templates.TemplateResponse(request=request, name="gestionProfesoresForm.html", context={"titulo": "Editar Profesor", "accion": f"/gestionProfesores/{id}/editar"})
+
+@router.post("/gestionProfesores/{id}/editar")
+async def actualizar_profesor(request: Request, id: int):
+    return RedirectResponse(url="/gestionProfesores", status_code=status.HTTP_303_SEE_OTHER)
+
+@router.get("/gestionProfesores/{id}/editar-grado", response_class=HTMLResponse)
+async def editar_grado_profesor_form(request: Request, id: int):
+    return templates.TemplateResponse(request=request, name="gestionProfesoresForm.html", context={"titulo": "Cambiar Grado del Profesor", "accion": f"/gestionProfesores/{id}/editar-grado"})
+
+@router.post("/gestionProfesores/{id}/editar-grado")
+async def actualizar_grado_profesor(request: Request, id: int):
+    return RedirectResponse(url=f"/gestionProfesores/{id}", status_code=status.HTTP_303_SEE_OTHER)
+
+@router.post("/gestionProfesores/{id}/eliminar")
+async def eliminar_profesor(request: Request, id: int):
+    return RedirectResponse(url="/gestionProfesores", status_code=status.HTTP_303_SEE_OTHER)
+
+
+# ============ GESTIÓN DE GRADOS ============
+
+@router.get("/gestionGrados", response_class=HTMLResponse)
+async def read_gestion_grados(request: Request):
+    return templates.TemplateResponse(request=request, name="gestionGrados.html", context={})
+
+@router.get("/gestionGrados/nuevo", response_class=HTMLResponse)
+async def nuevo_grado_form(request: Request):
+    return templates.TemplateResponse(request=request, name="gestionGradosForm.html", context={"titulo": "Nuevo Grado", "accion": "/gestionGrados/nuevo"})
+
+@router.post("/gestionGrados/nuevo")
+async def crear_grado(request: Request):
+    return RedirectResponse(url="/gestionGrados", status_code=status.HTTP_303_SEE_OTHER)
+
+@router.get("/gestionGrados/{id}/editar", response_class=HTMLResponse)
+async def editar_grado_form(request: Request, id: int):
+    return templates.TemplateResponse(request=request, name="gestionGradosForm.html", context={"titulo": "Editar Grado", "accion": f"/gestionGrados/{id}/editar"})
+
+@router.post("/gestionGrados/{id}/editar")
+async def actualizar_grado(request: Request, id: int):
+    return RedirectResponse(url="/gestionGrados", status_code=status.HTTP_303_SEE_OTHER)
+
+@router.post("/gestionGrados/{id}/eliminar")
+async def eliminar_grado(request: Request, id: int):
+    return RedirectResponse(url="/gestionGrados", status_code=status.HTTP_303_SEE_OTHER)
+
+
+# ============ HISTORIAL DE CAMBIOS ============
+
+@router.get("/historialCambios", response_class=HTMLResponse)
+async def read_historial_cambios(request: Request):
+    return templates.TemplateResponse(request=request, name="historialCambios.html", context={})
+
+
 @router.post("/calificaElProfesor")
 async def enviar_calificacion(
     request: Request,

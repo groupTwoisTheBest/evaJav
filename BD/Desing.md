@@ -54,7 +54,7 @@ La tabla `estudiantes` incluye:
 
 - `id`, identificador único, `PRIMARY KEY`.
 - `nombre` como `varchar(60)`.
-- `contrasenna`, almacenada como `text` porque contiene el *hash* de la contraseña (generado con bcrypt vía passlib en la aplicación), nunca la contraseña en texto plano. Un hash de bcrypt es de longitud fija, pero se usa `text` para no atarse a un tamaño específico de un algoritmo en particular.
+- `contrasenna`, almacenada como `text` porque contiene el *hash* de la contraseña (generado con Argon2id vía pwdlib en la aplicación), nunca la contraseña en texto plano. Un hash de Argon2id es de longitud variable, pero se usa `text` para no atarse a un tamaño específico de un algoritmo en particular.
 - `email` como `text`, con restricción `UNIQUE` para que sirva como identificador de acceso.
 - `id_grado`, `integer` con restricción `FOREIGN KEY` hacia `grados(id_grado)`, dado que todo estudiante pertenece a un único grado.
 
@@ -105,7 +105,7 @@ La tabla `evaluaciones` almacena los votos anónimos:
 
 - `id`, `PRIMARY KEY`.
 - `id_asignacion`, `FOREIGN KEY` hacia `asignaciones`. **Esta es la única relación que tiene la tabla.** No existe, en ninguna parte del esquema, una columna que conecte una fila de `evaluaciones` con una fila de `estudiantes`.
-- `actitudinal`, `actividades` y `metodologia`, cada una `smallint` con un `CHECK` que restringe su valor al rango 1–3 (1 = Malo, 2 = Bien, 3 = Excelente). Se modelaron como tres columnas fijas, en vez de una tabla normalizada de "criterios", porque el conjunto de criterios es fijo y conocido de antemano — no se espera que cambie con frecuencia, y una tabla adicional solo añadiría un `JOIN` innecesario a cada consulta de resultados.
+- `actitudinal`, `actividades` y `metodologia`, cada una `smallint` con un `CHECK` que restringe su valor al rango 1–4 (1 = Malo, 2 = Regular, 3 = Bien, 4 = Excelente). Se modelaron como tres columnas fijas, en vez de una tabla normalizada de "criterios", porque el conjunto de criterios es fijo y conocido de antemano — no se espera que cambie con frecuencia, y una tabla adicional solo añadiría un `JOIN` innecesario a cada consulta de resultados.
 - `fecha`, `timestamp NOT NULL DEFAULT now()`.
 
 ### Relaciones

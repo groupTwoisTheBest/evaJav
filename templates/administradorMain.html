@@ -1,22 +1,201 @@
 {% extends "baseAdministrador.html" %}
-{% block title %} Perfil Administrador {% endblock %}
+{% block title %}Dashboard Admin{% endblock %}
 
 {% block content %}
 
-<div class="card">
-    <p>Bienvenido al perfil de administrador. Aquí puedes gestionar profesores y acceder al centro estadístico.</p>
-    <p>el numero de profesores es: 200</p>
-    <p>el numero de estudiantes es: 1000</p>
+<div class="head">
+    <p class="kicker">Panel de Control</p>
+    <h1>Bienvenido, Administrador</h1>
+    <p class="muted">Resumen general del sistema de evaluación docente.</p>
 </div>
 
-
-<div class="card">
-    <p>mejores profesores:</p>
-    <ul>
-        <li> Jaja xd</li>
-        <li> Profesor Ejemplo</li>
-        <li> Otro Profesor</li>
-    </ul>
+<!-- KPIs -->
+<div class="grid">
+    <div class="card">
+        <p class="muted">Total Profesores</p>
+        <p class="stat">{{ total_profesores|default('150') }}</p>
+        <span class="badge ok">+5 este mes</span>
+    </div>
+    <div class="card">
+        <p class="muted">Total Estudiantes</p>
+        <p class="stat">{{ total_estudiantes|default('1,200') }}</p>
+        <span class="badge">+32 este mes</span>
+    </div>
+    <div class="card">
+        <p class="muted">Grados Activos</p>
+        <p class="stat">{{ total_grados|default('6') }}</p>
+        <span class="badge neutral">Todos activos</span>
+    </div>
+    <div class="card">
+        <p class="muted">Evaluaciones</p>
+        <p class="stat">{{ total_evaluaciones|default('89') }}</p>
+        <span class="badge ok">↑ 12% vs mes anterior</span>
+    </div>
 </div>
+
+<!-- Top Profesores + Alertas -->
+<div class="grid">
+    <div class="card">
+        <h3>Top 5 Mejores Profesores</h3>
+        <p class="muted small">Por promedio de evaluación</p>
+        <hr class="divider">
+        <div class="profesor-ranking">
+            <div class="ranking-item">
+                <span class="ranking-pos">1</span>
+                <div class="ranking-info">
+                    <p>María García</p>
+                    <div class="barra"><span style="width: 92%"></span></div>
+                </div>
+                <span class="badge ok">4.8</span>
+            </div>
+            <div class="ranking-item">
+                <span class="ranking-pos">2</span>
+                <div class="ranking-info">
+                    <p>Carlos López</p>
+                    <div class="barra"><span style="width: 87%"></span></div>
+                </div>
+                <span class="badge ok">4.6</span>
+            </div>
+            <div class="ranking-item">
+                <span class="ranking-pos">3</span>
+                <div class="ranking-info">
+                    <p>Ana Martínez</p>
+                    <div class="barra"><span style="width: 82%"></span></div>
+                </div>
+                <span class="badge ok">4.4</span>
+            </div>
+            <div class="ranking-item">
+                <span class="ranking-pos">4</span>
+                <div class="ranking-info">
+                    <p>Pedro Sánchez</p>
+                    <div class="barra"><span style="width: 76%"></span></div>
+                </div>
+                <span class="badge">4.2</span>
+            </div>
+            <div class="ranking-item">
+                <span class="ranking-pos">5</span>
+                <div class="ranking-info">
+                    <p>Laura Rodríguez</p>
+                    <div class="barra"><span style="width: 71%"></span></div>
+                </div>
+                <span class="badge">4.0</span>
+            </div>
+        </div>
+        <a href="/centroEstadistico" class="btn ghost mt">Ver estadísticas completas</a>
+    </div>
+
+    <div class="card">
+        <h3>Profesores con Problemas</h3>
+        <p class="muted small">Promedio bajo o evaluaciones pendientes</p>
+        <hr class="divider">
+        <div class="alertas-lista">
+            <div class="alerta-item">
+                <span class="alert-icon warn">⚠</span>
+                <div class="alerta-info">
+                    <p>Roberto Díaz</p>
+                    <p class="small muted">Promedio: 2.8 — Por debajo del mínimo</p>
+                </div>
+                <span class="badge off">Crítico</span>
+            </div>
+            <div class="alerta-item">
+                <span class="alert-icon warn">⚠</span>
+                <div class="alerta-info">
+                    <p>Fernando Torres</p>
+                    <p class="small muted">Sin evaluaciones este trimestre</p>
+                </div>
+                <span class="badge warn">Pendiente</span>
+            </div>
+            <div class="alerta-item">
+                <span class="alert-icon">ℹ</span>
+                <div class="alerta-info">
+                    <p>Elena Vargas</p>
+                    <p class="small muted">3 quejas registradas</p>
+                </div>
+                <span class="badge neutral">Revisar</span>
+            </div>
+        </div>
+        <a href="/gestionProfesores" class="btn ghost mt">Gestionar profesores</a>
+    </div>
+</div>
+
+<!-- Gráficas -->
+<div class="grid">
+    <div class="card">
+        <h3>Evaluaciones por Grado</h3>
+        <p class="muted small">Promedio de calificaciones por nivel</p>
+        <div class="chart"><canvas id="chartRendimiento"></canvas></div>
+    </div>
+    <div class="card">
+        <h3>Distribución de Estudiantes</h3>
+        <p class="muted small">Cantidad de estudiantes por grado</p>
+        <div class="chart"><canvas id="chartDistribucion"></canvas></div>
+    </div>
+</div>
+
+<!-- Accesos rápidos -->
+<div class="card">
+    <h3>Accesos Rápidos</h3>
+    <hr class="divider">
+    <div class="grid" style="margin-bottom: 0;">
+        <a href="/gestionEstudiantes" class="btn ghost">+ Nuevo Estudiante</a>
+        <a href="/gestionProfesores" class="btn ghost">+ Nuevo Profesor</a>
+        <a href="/gestionGrados" class="btn ghost">Gestionar Grados</a>
+        <a href="/centroEstadistico" class="btn ghost">Ver Gráficas</a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Gráfico de rendimiento por grado
+    new Chart(document.getElementById('chartRendimiento'), {
+        type: 'bar',
+        data: {
+            labels: ['1° Básico', '2° Básico', '3° Básico', '4° Básico', '5° Básico', '6° Básico'],
+            datasets: [{
+                label: 'Promedio',
+                data: [4.2, 3.9, 4.5, 3.7, 4.1, 4.3],
+                backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                borderColor: 'rgba(59, 130, 246, 1)',
+                borderWidth: 1,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, max: 5, ticks: { color: '#7f8da6' }, grid: { color: 'rgba(30,38,54,0.5)' } },
+                x: { ticks: { color: '#7f8da6' }, grid: { display: false } }
+            }
+        }
+    });
+
+    // Gráfico de distribución de estudiantes
+    new Chart(document.getElementById('chartDistribucion'), {
+        type: 'doughnut',
+        data: {
+            labels: ['1° Básico', '2° Básico', '3° Básico', '4° Básico', '5° Básico', '6° Básico'],
+            datasets: [{
+                data: [210, 195, 220, 185, 200, 190],
+                backgroundColor: [
+                    'rgba(59, 130, 246, 0.8)',
+                    'rgba(34, 211, 238, 0.8)',
+                    'rgba(34, 197, 94, 0.8)',
+                    'rgba(245, 158, 11, 0.8)',
+                    'rgba(242, 85, 90, 0.8)',
+                    'rgba(127, 141, 166, 0.8)'
+                ],
+                borderColor: '#10151f',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { color: '#7f8da6', padding: 12 } } }
+        }
+    });
+</script>
 
 {% endblock %}

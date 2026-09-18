@@ -1,10 +1,248 @@
 {% extends "baseAdministrador.html" %}
-{% block title %} Centro Estadístico {% endblock %}
+{% block title %}Centro Estadístico{% endblock %}
 
 {% block content %}
 
-<div class="card">
-    <p>Centro Estadístico - Próximamente</p>
+<div class="head">
+    <p class="kicker">Estadísticas</p>
+    <h1>Centro Estadístico</h1>
+    <p class="muted">Análisis detallado del rendimiento docente por grado.</p>
 </div>
+
+<!-- Filtros -->
+<div class="card">
+    <div class="form-inline">
+        <div>
+            <label for="periodo">Período</label>
+            <select class="input" id="periodo">
+                <option value="mes">Este mes</option>
+                <option value="trimestre">Este trimestre</option>
+                <option value="ano">Este año</option>
+            </select>
+        </div>
+        <div>
+            <label for="grado">Grado</label>
+            <select class="input" id="grado">
+                <option value="">Todos los grados</option>
+                <option value="1">1° Básico</option>
+                <option value="2">2° Básico</option>
+                <option value="3">3° Básico</option>
+                <option value="4">4° Básico</option>
+                <option value="5">5° Básico</option>
+                <option value="6">6° Básico</option>
+            </select>
+        </div>
+        <div>
+            <button class="btn" style="margin-top: 1.5rem;">Aplicar Filtros</button>
+        </div>
+    </div>
+</div>
+
+<!-- Top Profesores + Profesores con problemas -->
+<div class="grid">
+    <div class="card">
+        <h3>Top 10 Mejores Profesores</h3>
+        <p class="muted small">Por promedio de evaluación</p>
+        <div class="chart"><canvas id="chartMejores"></canvas></div>
+    </div>
+    <div class="card">
+        <h3>Profesores con Problemas</h3>
+        <p class="muted small">Promedio bajo o evaluaciones pendientes</p>
+        <div class="chart"><canvas id="chartProblemas"></canvas></div>
+    </div>
+</div>
+
+<!-- Tendencia + Rendimiento por categoría -->
+<div class="grid">
+    <div class="card">
+        <h3>Tendencia de Evaluaciones</h3>
+        <p class="muted small">Evaluaciones realizadas por mes</p>
+        <div class="chart"><canvas id="chartTendencia"></canvas></div>
+    </div>
+    <div class="card">
+        <h3>Rendimiento por Categoría</h3>
+        <p class="muted small">Promedio por área de evaluación</p>
+        <div class="chart"><canvas id="chartCategorias"></canvas></div>
+    </div>
+</div>
+
+<!-- Detalle por grado -->
+<div class="card">
+    <h3>Detalle por Grado</h3>
+    <p class="muted small">Promedio de cada grado con desglose</p>
+    <div class="tabla-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Grado</th>
+                    <th>Profesores</th>
+                    <th>Estudiantes</th>
+                    <th>Promedio General</th>
+                    <th>Mejor Profesor</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1° Básico</td>
+                    <td>28</td>
+                    <td>210</td>
+                    <td><span class="badge ok">4.2</span></td>
+                    <td>Carlos López</td>
+                    <td><span class="badge ok">Óptimo</span></td>
+                </tr>
+                <tr>
+                    <td>2° Básico</td>
+                    <td>26</td>
+                    <td>195</td>
+                    <td><span class="badge ok">3.9</span></td>
+                    <td>Ana Martínez</td>
+                    <td><span class="badge ok">Bueno</span></td>
+                </tr>
+                <tr>
+                    <td>3° Básico</td>
+                    <td>30</td>
+                    <td>220</td>
+                    <td><span class="badge ok">4.5</span></td>
+                    <td>María García</td>
+                    <td><span class="badge ok">Óptimo</span></td>
+                </tr>
+                <tr>
+                    <td>4° Básico</td>
+                    <td>24</td>
+                    <td>185</td>
+                    <td><span class="badge warn">3.7</span></td>
+                    <td>Pedro Sánchez</td>
+                    <td><span class="badge warn">Mejorable</span></td>
+                </tr>
+                <tr>
+                    <td>5° Básico</td>
+                    <td>22</td>
+                    <td>200</td>
+                    <td><span class="badge ok">4.1</span></td>
+                    <td>Laura Rodríguez</td>
+                    <td><span class="badge ok">Bueno</span></td>
+                </tr>
+                <tr>
+                    <td>6° Básico</td>
+                    <td>20</td>
+                    <td>190</td>
+                    <td><span class="badge ok">4.3</span></td>
+                    <td>Miguel Herrera</td>
+                    <td><span class="badge ok">Óptimo</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const colores = {
+        azul: 'rgba(59, 130, 246, 0.8)',
+        cyan: 'rgba(34, 211, 238, 0.8)',
+        verde: 'rgba(34, 197, 94, 0.8)',
+        amarillo: 'rgba(245, 158, 11, 0.8)',
+        rojo: 'rgba(242, 85, 90, 0.8)',
+        gris: 'rgba(127, 141, 166, 0.8)'
+    };
+
+    const opcionesBase = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true, max: 5, ticks: { color: '#7f8da6' }, grid: { color: 'rgba(30,38,54,0.5)' } },
+            x: { ticks: { color: '#7f8da6' }, grid: { display: false } }
+        }
+    };
+
+    // Top 10 Mejores Profesores
+    new Chart(document.getElementById('chartMejores'), {
+        type: 'bar',
+        data: {
+            labels: ['M. García', 'C. López', 'A. Martínez', 'P. Sánchez', 'L. Rodríguez', 'M. Herrera', 'S. Castro', 'R. Muñoz', 'F. Reyes', 'C. Vega'],
+            datasets: [{
+                data: [4.8, 4.6, 4.4, 4.2, 4.0, 3.9, 3.8, 3.7, 3.6, 3.5],
+                backgroundColor: colores.azul,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            ...opcionesBase,
+            indexAxis: 'y'
+        }
+    });
+
+    // Profesores con Problemas
+    new Chart(document.getElementById('chartProblemas'), {
+        type: 'bar',
+        data: {
+            labels: ['R. Díaz', 'F. Torres', 'E. Vargas', 'J. Silva', 'L. Navarro'],
+            datasets: [{
+                data: [2.8, 3.0, 3.2, 3.3, 3.4],
+                backgroundColor: colores.rojo,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            ...opcionesBase,
+            indexAxis: 'y',
+            scales: {
+                ...opcionesBase.scales,
+                y: { ...opcionesBase.scales.y, reverse: true }
+            }
+        }
+    });
+
+    // Tendencia de Evaluaciones
+    new Chart(document.getElementById('chartTendencia'), {
+        type: 'line',
+        data: {
+            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep'],
+            datasets: [{
+                label: 'Evaluaciones',
+                data: [12, 19, 15, 22, 18, 25, 20, 28, 32],
+                borderColor: colores.azul,
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            ...opcionesBase,
+            plugins: { legend: { display: true, labels: { color: '#7f8da6' } } }
+        }
+    });
+
+    // Rendimiento por Categoría
+    new Chart(document.getElementById('chartCategorias'), {
+        type: 'radar',
+        data: {
+            labels: ['Didáctica', 'Puntualidad', 'Comunicación', 'Material', 'Evaluación'],
+            datasets: [{
+                label: 'Promedio General',
+                data: [4.2, 4.0, 3.8, 3.5, 4.1],
+                borderColor: colores.azul,
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                pointBackgroundColor: colores.azul
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#7f8da6' } } },
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 5,
+                    ticks: { color: '#7f8da6', backdropColor: 'transparent' },
+                    grid: { color: 'rgba(30,38,54,0.5)' },
+                    pointLabels: { color: '#7f8da6' }
+                }
+            }
+        }
+    });
+</script>
 
 {% endblock %}

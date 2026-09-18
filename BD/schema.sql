@@ -1,7 +1,7 @@
 -- ============================================================
 -- evaJav — Plataforma de evaluación docente anónima
 -- schema.sql — Proyecto Final CS50 SQL
--- Motor: PostgreSQL (hosteado en Neon)
+-- Motor: PostgreSQL (hosteado en Supabase)
 -- ============================================================
 
 
@@ -27,7 +27,7 @@ CREATE TABLE estudiantes (
     nombre      varchar(60) NOT NULL,
 
     -- La aplicación siempre debe insertar aquí un hash
-    -- (ej. bcrypt vía passlib), nunca la contraseña en texto plano.
+    -- (ej. Argon2id vía pwdlib), nunca la contraseña en texto plano.
     contrasenna text NOT NULL,
 
     email       text NOT NULL,

@@ -1,0 +1,47 @@
+{% extends "baseAdministrador.html" %}
+{% block title %}{{ titulo|default('Nuevo Profesor') }}{% endblock %}
+
+{% block content %}
+
+<div class="head">
+    <p class="kicker">Gestión de Profesores</p>
+    <h1>{{ titulo|default('Nuevo Profesor') }}</h1>
+</div>
+
+<div class="card mid">
+    <form action="{{ accion|default('/gestionProfesores/nuevo') }}" method="POST">
+        <label for="nombre">Nombre Completo</label>
+        <input class="input" id="nombre" name="nombre" type="text" 
+               placeholder="Ej: María García" 
+               value="{{ profesor.nombre|default('') }}" required>
+
+        <label for="email">Correo Electrónico</label>
+        <input class="input" id="email" name="email" type="email" 
+               placeholder="Ej: maria@email.com" 
+               value="{{ profesor.email|default('') }}" required>
+
+        {% if not profesor %}
+        <label for="contrasenna">Contraseña</label>
+        <input class="input" id="contrasenna" name="contrasenna" type="password" 
+               placeholder="Mínimo 6 caracteres" required>
+        {% endif %}
+
+        <label for="id_grado">Grado Asignado</label>
+        <select class="input" id="id_grado" name="id_grado" required>
+            <option value="">Selecciona un grado</option>
+            <option value="1" {{ 'selected' if profesor.id_grado == 1 else '' }}>1° Básico</option>
+            <option value="2" {{ 'selected' if profesor.id_grado == 2 else '' }}>2° Básico</option>
+            <option value="3" {{ 'selected' if profesor.id_grado == 3 else '' }}>3° Básico</option>
+            <option value="4" {{ 'selected' if profesor.id_grado == 4 else '' }}>4° Básico</option>
+            <option value="5" {{ 'selected' if profesor.id_grado == 5 else '' }}>5° Básico</option>
+            <option value="6" {{ 'selected' if profesor.id_grado == 6 else '' }}>6° Básico</option>
+        </select>
+
+        <div class="row-actions mt">
+            <button type="submit" class="btn">Guardar</button>
+            <a href="/gestionProfesores" class="btn ghost">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

@@ -479,3 +479,175 @@ border: 2px solid transparent;
 
 /* Área de texto de la carga masiva: misma barra fina */
 textarea.input { scrollbar-color: var(--line-2) transparent; }
+
+/* ==================================================================
+   Componentes del Panel de Administrador
+================================================================== */
+
+/* Ranking de profesores */
+.profesor-ranking {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.ranking-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 10px;
+    transition: background 0.15s ease;
+}
+
+.ranking-item:hover {
+    background: rgb(59 130 246 / 0.05);
+}
+
+.ranking-pos {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent);
+    width: 1.5rem;
+    text-align: center;
+}
+
+.ranking-info {
+    flex: 1;
+}
+
+.ranking-info p {
+    margin: 0 0 0.25rem;
+    font-size: 0.92rem;
+}
+
+.barra {
+    height: 6px;
+    background: var(--bg-2);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.barra > span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    border-radius: 999px;
+}
+
+/* Alertas del dashboard */
+.alertas-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.alerta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem;
+    border-radius: 10px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+}
+
+.alert-icon {
+    font-size: 1.1rem;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
+.alert-icon.warn {
+    background: rgb(245 158 11 / 0.15);
+    color: var(--warn);
+}
+
+.alerta-info {
+    flex: 1;
+}
+
+.alerta-info p {
+    margin: 0;
+    font-size: 0.92rem;
+}
+
+.alerta-info .small {
+    margin-top: 0.15rem;
+}
+
+/* Header de grado */
+.grado-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+/* Formulario centrado */
+.card.mid {
+    max-width: 560px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Estilos para gráficas en el admin */
+.chart {
+    position: relative;
+    height: 300px;
+    margin-top: 1rem;
+}
+
+/* Responsive admin */
+@media (max-width: 768px) {
+    .nav-links {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .head-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .head-row .btn {
+        width: 100%;
+    }
+
+    .form-inline {
+        flex-direction: column;
+    }
+
+    .form-inline > div {
+        width: 100%;
+    }
+
+    .chart {
+        height: 250px;
+    }
+
+    .ranking-item {
+        flex-wrap: wrap;
+    }
+
+    .alerta-item {
+        flex-wrap: wrap;
+    }
+}
+
+/* Animaciones adicionales para el admin */
+@keyframes pulso {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.badge.vivo {
+    animation: pulso 2s ease-in-out infinite;
+}

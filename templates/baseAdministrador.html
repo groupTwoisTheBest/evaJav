@@ -4,25 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% block stylesheets %}
-<link rel="stylesheet" href="{{ url_for('static', path='administrador.css') }}">
-{% endblock %}
-
+    <link rel="stylesheet" href="{{ url_for('static', path='administrador.css') }}">
+    {% endblock %}
     <link rel="icon" href="{{ url_for('static', path='favicon.png') }}" type="image/x-icon">
-    <title>{% block title %}EvaJav{% endblock %}</title>
+    <title>{% block title %}EvaJav Admin{% endblock %}</title>
 </head>
 <body>
     {% block nav %}
     <nav class="nav">
-    <div class="brand">
-        <a href="/inicio-sesion" class="btn-back">Volver</a>
-            <a href="/administrador">Inicio</a>
-            <a href="/gestionProfesores">Gestión de Profesores</a>
-            <a href="/centroEstadistico">Centro Estadístico</a>
-    </div>
+        <a href="/administrador" class="brand">Evaluación <span>Admin</span></a>
+        <ul class="nav-links">
+            <li><a href="/administrador">Dashboard</a></li>
+            <li><a href="/gestionProfesores">Profesores</a></li>
+            <li><a href="/gestionEstudiantes">Estudiantes</a></li>
+            <li><a href="/gestionGrados">Grados</a></li>
+            <li><a href="/centroEstadistico">Estadísticas</a></li>
+            <li><a href="/historialCambios">Historial</a></li>
+        </ul>
+        <a href="/inicio-sesion" class="btn btn-sm ghost">Cerrar Sesión</a>
     </nav>
     {% endblock %}
-    <main class="wrap narrow">
+    <main class="wrap">
         {% block content %}{% endblock %}
     </main>
+    <footer class="foot">
+        <span class="mono">Evaluación Docente &copy; 2026 — Panel de Administración</span>
+    </footer>
 </body>
 </html>

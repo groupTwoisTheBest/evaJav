@@ -1,0 +1,51 @@
+{% extends "baseAdministrador.html" %}
+{% block title %}{{ titulo|default('Nuevo Estudiante') }}{% endblock %}
+
+{% block content %}
+
+<div class="head">
+    <p class="kicker">Gestión de Estudiantes</p>
+    <h1>{{ titulo|default('Nuevo Estudiante') }}</h1>
+</div>
+
+<div class="card mid">
+    {% if error %}
+    <div class="alert error">{{ error }}</div>
+    {% endif %}
+
+    <form action="{{ accion|default('/gestionEstudiantes/nuevo') }}" method="POST">
+        <label for="nombre">Nombre Completo</label>
+        <input class="input" id="nombre" name="nombre" type="text" 
+               placeholder="Ej: Juan Pérez" 
+               value="{{ estudiante.nombre|default('') }}" required>
+
+        <label for="email">Correo Electrónico</label>
+        <input class="input" id="email" name="email" type="email" 
+               placeholder="Ej: juan@email.com" 
+               value="{{ estudiante.email|default('') }}" required>
+
+        {% if not estudiante %}
+        <label for="contrasenna">Contraseña</label>
+        <input class="input" id="contrasenna" name="contrasenna" type="password" 
+               placeholder="Mínimo 6 caracteres" required>
+        {% endif %}
+
+        <label for="id_grado">Grado</label>
+        <select class="input" id="id_grado" name="id_grado" required>
+            <option value="">Selecciona un grado</option>
+            <option value="1" {{ 'selected' if estudiante.id_grado == 1 else '' }}>1° Básico</option>
+            <option value="2" {{ 'selected' if estudiante.id_grado == 2 else '' }}>2° Básico</option>
+            <option value="3" {{ 'selected' if estudiante.id_grado == 3 else '' }}>3° Básico</option>
+            <option value="4" {{ 'selected' if estudiante.id_grado == 4 else '' }}>4° Básico</option>
+            <option value="5" {{ 'selected' if estudiante.id_grado == 5 else '' }}>5° Básico</option>
+            <option value="6" {{ 'selected' if estudiante.id_grado == 6 else '' }}>6° Básico</option>
+        </select>
+
+        <div class="row-actions mt">
+            <button type="submit" class="btn">Guardar</button>
+            <a href="/gestionEstudiantes" class="btn ghost">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

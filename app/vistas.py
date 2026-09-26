@@ -62,7 +62,12 @@ async def login_admin(
         return RedirectResponse(url="/administrador/iniciar-sesion?error=1", status_code=status.HTTP_303_SEE_OTHER)
     if user is None:
         return RedirectResponse(url="/administrador/iniciar-sesion?error=1", status_code=status.HTTP_303_SEE_OTHER)
-    return RedirectResponse(url="/administrador", status_code=status.HTTP_303_SEE_OTHER)
+    
+    token = create_token(user["email"])
+    response = RedirectResponse(url="/administrador", status_code=status.HTTP_303_SEE_OTHER)
+    response.set_cookie(key="token", value=token, httponly=True, samesite="lax", secure=True)  
+    return response
+
 
 
 @router.get("/administrador/iniciar-sesion")
@@ -114,6 +119,9 @@ async def seleccionar_profesor(request: Request, conn: ConnectionDep, email: Cur
 
 @router.get("/administrador", response_class=HTMLResponse)
 async def read_administrador(request: Request):
+    email = request.cookies.get("token")
+    if not email:
+        return RedirectResponse(url="/administrador/iniciar-sesion", status_code=status.HTTP_303_SEE_OTHER)
     return templates.TemplateResponse(request=request, name="administradorMain.html", context={})
 
 

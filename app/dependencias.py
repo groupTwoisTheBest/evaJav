@@ -17,7 +17,7 @@ async def get_current_user(request: Request) -> str:
     if not email:
         raise HTTPException(
             status_code=status.HTTP_303_SEE_OTHER,
-            headers={"Location": "/inicio-sesion?error=1"}
+            detail="Usuario no autenticado",
         )
     return email
 

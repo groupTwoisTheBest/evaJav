@@ -12,16 +12,15 @@
 <body>
     {% block nav %}
     <nav class="nav">
-        <a href="/administrador" class="brand">Evaluación <span>Admin</span></a>
-        <ul class="nav-links">
-            <li><a href="/administrador">Dashboard</a></li>
-            <li><a href="/gestionProfesores">Profesores</a></li>
-            <li><a href="/gestionEstudiantes">Estudiantes</a></li>
-            <li><a href="/gestionGrados">Grados</a></li>
-            <li><a href="/centroEstadistico">Estadísticas</a></li>
-            <li><a href="/historialCambios">Historial</a></li>
-        </ul>
-        <a href="/inicio-sesion" class="btn btn-sm ghost">Cerrar Sesión</a>
+        <a href="/administrador" class="brand"><span>Evaluación Admin</span></a>
+        
+            <a class="nav-links" href="/gestionProfesores">Profesores</a>
+            <a class="nav-links" href="/gestionEstudiantes">Estudiantes</a>
+            <a class="nav-links" href="/gestionGrados">Grados</a>
+            <a class="nav-links" href="/centroEstadistico">Estadísticas</a>
+            <a class="nav-links" href="/historialCambios">Historial</a>
+        
+        <a href="/logout" class="btn auto sm ghost">Cerrar Sesión</a>
     </nav>
     {% endblock %}
     <main class="wrap">

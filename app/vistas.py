@@ -118,7 +118,7 @@ async def seleccionar_profesor(request: Request, conn: ConnectionDep, email: Cur
 
 
 @router.get("/administrador", response_class=HTMLResponse)
-async def read_administrador(request: Request):
+async def read_administrador(request: Request, email: CurrentUserDep,conn: ConnectionDep):
     email = request.cookies.get("token")
     if not email:
         return RedirectResponse(url="/administrador/iniciar-sesion", status_code=status.HTTP_303_SEE_OTHER)

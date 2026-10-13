@@ -15,7 +15,7 @@ async def inicio_sesion_admin(conn, email: str, contrasenna: str) -> dict | None
         "SELECT email, contrasenna FROM administradores WHERE email = $1",
         email
     )
-    if row and verify_password(contrasenna, row["contrasenna"]):
+    if row and verify_password(contrasenna, row ["contrasenna"]):
         return dict(row)
     return None
 

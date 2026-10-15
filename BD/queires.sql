@@ -120,8 +120,12 @@ WHERE nombre = '$2';
 INSERT INTO asignaciones (id_profesor, id_materia, id_periodo, id_grado)
 VALUES ($1, $2, $3, $4);
 
---j estuvo aqui
-SELECT 
+--dasboar admin 
+SELECT COUNT(*) FROM estudiantes
+
+SELECT COUNT(*) FROM maestros
+
+SELECT COUNT(*) FROM inscripciones WHERE ya_voto = TRUE
 
 -- ------------------------------------------------------------
 -- 4. MANTENIMIENTO Y CORRECCIÓN DE DATOS

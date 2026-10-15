@@ -13,13 +13,11 @@
 <div class="grid">
     <div class="card">
         <p class="muted">Total Profesores</p>
-        <p class="stat">{{ total_profesores|default('150') }}</p>
-        <span class="badge ok">+5 este mes</span>
+        <p class="stat">{{ndm}}</p>
     </div>
     <div class="card">
         <p class="muted">Total Estudiantes</p>
-        <p class="stat">{{ total_estudiantes|default('1,200') }}</p>
-        <span class="badge">+32 este mes</span>
+        <p class="stat">{{nde}}</p>
     </div>
     <div class="card">
         <p class="muted">Grados Activos</p>
@@ -150,7 +148,7 @@
     new Chart(document.getElementById('chartRendimiento'), {
         type: 'bar',
         data: {
-            labels: ['1° Básico', '2° Básico', '3° Básico', '4° Básico', '5° Básico', '6° Básico'],
+            labels: ['11°', '10°', '9°', '8°', '7°', '6°'],
             datasets: [{
                 label: 'Promedio',
                 data: [4.2, 3.9, 4.5, 3.7, 4.1, 4.3],
@@ -175,7 +173,7 @@
     new Chart(document.getElementById('chartDistribucion'), {
         type: 'doughnut',
         data: {
-            labels: ['1° Básico', '2° Básico', '3° Básico', '4° Básico', '5° Básico', '6° Básico'],
+            labels: ['11°', '10°', '9°', '8°', '7°', '6°'],
             datasets: [{
                 data: [210, 195, 220, 185, 200, 190],
                 backgroundColor: [

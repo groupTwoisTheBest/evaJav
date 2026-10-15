@@ -15,7 +15,7 @@ async def inicio_sesion_admin(conn, email: str, contrasenna: str) -> dict | None
         "SELECT email, contrasenna FROM administradores WHERE email = $1",
         email
     )
-    if row and verify_password(contrasenna, row ["contrasenna"]):
+    if row and verify_password(contrasenna, row["contrasenna"]):
         return dict(row)
     return None
 
@@ -104,3 +104,21 @@ async def registrar_calificacion(
                 WHERE m.nombre = $2
             )
         """, email, profesor)
+
+async def n_estudiantes_admin (conn) -> int | None:
+    row = await conn.fetchrow(
+        "SELECT COUNT(*) FROM estudiantes"
+    )
+    return int(row[0]) if row else None
+
+async def n_maestros_admin (conn) -> int | None:
+    row = await conn.fetchrow(
+        "SELECT COUNT(*) FROM maestros"
+    )
+    return int(row[0]) if row else None
+
+async def n_inscripciones_admin (conn) -> int | None:
+    row = await conn.fetchrow(
+        "SELECT COUNT(*) FROM inscripciones WHERE ya_voto = TRUE"
+    )
+    return int(row[0]) if row else None

@@ -1,6 +1,6 @@
 from typing import Annotated
 from app.dependencias import APIRouter, Depends, Request, Form, status, RedirectResponse, PlainTextResponse, HTMLResponse, Jinja2Templates, logger, ConnectionDep, CurrentUserDep
-from app.repositorio import inicio_sesion as autenticar_estudiante, registrar_estudiante, existe_email, inicio_sesion_admin, select_profesor, nombre_estudiante, registrar_calificacion
+from app.repositorio import inicio_sesion as autenticar_estudiante, registrar_estudiante, existe_email, inicio_sesion_admin, select_profesor, nombre_estudiante, registrar_calificacion,n_estudiantes_admin,n_maestros_admin
 from app.esquemas import CrearEstudiante, LoginSchema, CalificacionSchema, RegistroSchema, SeleccionProfesorSchema
 from app.seguridad import create_token, verify_token
 
@@ -120,9 +120,12 @@ async def seleccionar_profesor(request: Request, conn: ConnectionDep, email: Cur
 @router.get("/administrador", response_class=HTMLResponse)
 async def read_administrador(request: Request, email: CurrentUserDep,conn: ConnectionDep):
     email = request.cookies.get("token")
+    nde = await n_estudiantes_admin(conn)
+    ndm = await n_maestros_admin(conn)
+    
     if not email:
         return RedirectResponse(url="/administrador/iniciar-sesion", status_code=status.HTTP_303_SEE_OTHER)
-    return templates.TemplateResponse(request=request, name="administradorMain.html", context={})
+    return templates.TemplateResponse(request=request, name="administradorMain.html", context={"nde":nde, "ndm":ndm})
 
 
 @router.get("/gestionProfesores", response_class=HTMLResponse)

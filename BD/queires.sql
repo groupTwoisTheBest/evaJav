@@ -121,11 +121,44 @@ INSERT INTO asignaciones (id_profesor, id_materia, id_periodo, id_grado)
 VALUES ($1, $2, $3, $4);
 
 --dasboar admin 
+
 SELECT COUNT(*) FROM estudiantes
 
 SELECT COUNT(*) FROM maestros
 
+SELECT COUNT(*) FROM grados
+
 SELECT COUNT(*) FROM inscripciones WHERE ya_voto = TRUE
+
+
+--graficas
+
+--top 5 maestros con mejores calificacion promedio
+SELECT m.nombre AS maestro, ROUND(AVG((e.actitudinal + e.actividades + e.metodologia) / 3.0), 2) AS calificacion_promedio
+    FROM maestros AS m
+    JOIN asignaciones AS a ON m.id = a.id_profesor
+    JOIN evaluaciones AS e ON a.id = e.id_asignacion
+    GROUP BY m.id
+    ORDER BY calificacion_promedio DESC
+    LIMIT 5;
+
+--top 5 maestros con peores calificaciones promedio
+SELECT m.nombre AS maestro, ROUND(AVG((e.actitudinal + e.actividades + e.metodologia) / 3.0), 2) AS calificacion_promedio
+    FROM maestros AS m
+    JOIN asignaciones AS a ON m.id = a.id_profesor
+    JOIN evaluaciones AS e ON a.id = e.id_asignacion
+    GROUP BY m.id
+    ORDER BY calificacion_promedio ASC
+    LIMIT 5;
+
+--grafica de pastel
+SELECT COUNT(*) FROM estudiantes where id_grado = 1
+SELECT COUNT(*) FROM estudiantes where id_grado = 2
+SELECT COUNT(*) FROM estudiantes where id_grado = 3
+SELECT COUNT(*) FROM estudiantes where id_grado = 4
+SELECT COUNT(*) FROM estudiantes where id_grado = 5
+SELECT COUNT(*) FROM estudiantes where id_grado = 6
+
 
 -- ------------------------------------------------------------
 -- 4. MANTENIMIENTO Y CORRECCIÓN DE DATOS

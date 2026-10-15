@@ -1,6 +1,6 @@
 from typing import Annotated
 from app.dependencias import APIRouter, Depends, Request, Form, status, RedirectResponse, PlainTextResponse, HTMLResponse, Jinja2Templates, logger, ConnectionDep, CurrentUserDep
-from app.repositorio import inicio_sesion as autenticar_estudiante, registrar_estudiante, existe_email, inicio_sesion_admin, select_profesor, nombre_estudiante, registrar_calificacion,n_estudiantes_admin,n_maestros_admin
+from app.repositorio import inicio_sesion as autenticar_estudiante, registrar_estudiante, existe_email, inicio_sesion_admin, select_profesor, nombre_estudiante, registrar_calificacion,n_estudiantes_admin,n_maestros_admin,n_inscripciones_admin,n_grados_admin,n_e_admin_1, n_e_admin_2,n_e_admin_3,n_e_admin_4,n_e_admin_5,n_e_admin_6,mejor_maestro_admin,peor_maestro_admin
 from app.esquemas import CrearEstudiante, LoginSchema, CalificacionSchema, RegistroSchema, SeleccionProfesorSchema
 from app.seguridad import create_token, verify_token
 
@@ -116,16 +116,26 @@ async def seleccionar_profesor(request: Request, conn: ConnectionDep, email: Cur
         context={"maestro": datos.maestro, "nombre": nombre["nombre"] if nombre else ""}
     )
 
-
 @router.get("/administrador", response_class=HTMLResponse)
 async def read_administrador(request: Request, email: CurrentUserDep,conn: ConnectionDep):
     email = request.cookies.get("token")
     nde = await n_estudiantes_admin(conn)
     ndm = await n_maestros_admin(conn)
-    
+    ndi = await n_inscripciones_admin(conn)
+    ndg = await n_grados_admin(conn)
+    mma = await mejor_maestro_admin(conn)
+    pma = await peor_maestro_admin(conn)
+    n_e_1 = await n_e_admin_1(conn)
+    n_e_2 = await n_e_admin_2(conn)
+    n_e_3 = await n_e_admin_3(conn)
+    n_e_4 = await n_e_admin_4(conn)
+    n_e_5 = await n_e_admin_5(conn)
+    n_e_6 = await n_e_admin_6(conn)
     if not email:
         return RedirectResponse(url="/administrador/iniciar-sesion", status_code=status.HTTP_303_SEE_OTHER)
-    return templates.TemplateResponse(request=request, name="administradorMain.html", context={"nde":nde, "ndm":ndm})
+    return templates.TemplateResponse(request=request, name="administradorMain.html", context={"nde":nde, "ndm":ndm, "ndi":ndi, "ndg":ndg,
+                                                                                               "mma": mma, "pma": pma,
+                                                                                               "n_e_1": n_e_1, "n_e_2": n_e_2, "n_e_3": n_e_3, "n_e_4": n_e_4, "n_e_5": n_e_5, "n_e_6": n_e_6})
 
 
 @router.get("/gestionProfesores", response_class=HTMLResponse)

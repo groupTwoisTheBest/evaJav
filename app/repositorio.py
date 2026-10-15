@@ -105,6 +105,34 @@ async def registrar_calificacion(
             )
         """, email, profesor)
 
+async def mejor_maestro_admin(conn) -> list | None:
+    rows = await conn.fetch(
+        """
+        SELECT m.nombre AS maestro, ROUND(AVG((e.actitudinal + e.actividades + e.metodologia) / 3.0), 2) AS calificacion_promedio
+        FROM maestros AS m
+        JOIN asignaciones AS a ON m.id = a.id_profesor
+        JOIN evaluaciones AS e ON a.id = e.id_asignacion
+        GROUP BY m.id
+        ORDER BY calificacion_promedio DESC
+        LIMIT 5;
+        """
+    )
+    return [dict(row) for row in rows] if rows else None
+
+async def peor_maestro_admin(conn) -> list | None:
+    rows = await conn.fetch(
+        """
+        SELECT m.nombre AS maestro, ROUND(AVG((e.actitudinal + e.actividades + e.metodologia) / 3.0), 2) AS calificacion_promedio
+        FROM maestros AS m
+        JOIN asignaciones AS a ON m.id = a.id_profesor
+        JOIN evaluaciones AS e ON a.id = e.id_asignacion
+        GROUP BY m.id
+        ORDER BY calificacion_promedio ASC
+        LIMIT 5;
+        """
+    )
+    return [dict(row) for row in rows] if rows else None
+
 async def n_estudiantes_admin (conn) -> int | None:
     row = await conn.fetchrow(
         "SELECT COUNT(*) FROM estudiantes"
@@ -120,5 +148,48 @@ async def n_maestros_admin (conn) -> int | None:
 async def n_inscripciones_admin (conn) -> int | None:
     row = await conn.fetchrow(
         "SELECT COUNT(*) FROM inscripciones WHERE ya_voto = TRUE"
+    )
+    return int(row[0]) if row else None
+
+async def n_grados_admin (conn) -> int | None:
+    row = await conn.fetchrow(
+        "SELECT COUNT(*) FROM grados"
+    )
+    return int(row[0]) if row else None
+
+
+async def n_e_admin_1 (conn) -> int | None:
+    row = await conn.fetchrow(
+        "SELECT COUNT(*) FROM estudiantes where id_grado = 1"
+    )
+    return int(row[0]) if row else None
+
+async def n_e_admin_2 (conn) -> int | None:
+    row = await conn.fetchrow(
+        "SELECT COUNT(*) FROM estudiantes where id_grado = 2"
+    )
+    return int(row[0]) if row else None
+
+async def n_e_admin_3 (conn) -> int | None:
+    row = await conn.fetchrow(
+        "SELECT COUNT(*) FROM estudiantes where id_grado = 3"
+    )
+    return int(row[0]) if row else None
+
+async def n_e_admin_4 (conn) -> int | None:
+    row = await conn.fetchrow(
+        "SELECT COUNT(*) FROM estudiantes where id_grado = 4"
+    )
+    return int(row[0]) if row else None
+
+async def n_e_admin_5 (conn) -> int | None:
+    row = await conn.fetchrow(
+        "SELECT COUNT(*) FROM estudiantes where id_grado = 5"
+    )
+    return int(row[0]) if row else None
+
+async def n_e_admin_6 (conn) -> int | None:
+    row = await conn.fetchrow(
+        "SELECT COUNT(*) FROM estudiantes where id_grado = 6"
     )
     return int(row[0]) if row else None

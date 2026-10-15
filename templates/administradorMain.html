@@ -21,46 +21,45 @@
     </div>
     <div class="card">
         <p class="muted">Grados Activos</p>
-        <p class="stat">{{ total_grados|default('6') }}</p>
-        <span class="badge neutral">Todos activos</span>
+        <p class="stat">{{ndg}}</p>
     </div>
     <div class="card">
         <p class="muted">Evaluaciones</p>
-        <p class="stat">{{ total_evaluaciones|default('89') }}</p>
-        <span class="badge ok">↑ 12% vs mes anterior</span>
+        <p class="stat">{{ndi}}</p>
     </div>
 </div>
 
 <!-- Top Profesores + Alertas -->
 <div class="grid">
     <div class="card">
-        <h3>Top 5 Mejores Profesores</h3>
+        <h3>Top 5 Mejores Maestros</h3>
         <p class="muted small">Por promedio de evaluación</p>
         <hr class="divider">
         <div class="profesor-ranking">
             <div class="ranking-item">
                 <span class="ranking-pos">1</span>
                 <div class="ranking-info">
-                    <p>María García</p>
+                    
+                    <p>{{ mma.maestro }}</p>
                     <div class="barra"><span style="width: 92%"></span></div>
                 </div>
-                <span class="badge ok">4.8</span>
+                <span class="badge ok">{{ mma['calificacion_promedio'] }}</span>
             </div>
             <div class="ranking-item">
                 <span class="ranking-pos">2</span>
                 <div class="ranking-info">
-                    <p>Carlos López</p>
+                    <p>z</p>
                     <div class="barra"><span style="width: 87%"></span></div>
                 </div>
-                <span class="badge ok">4.6</span>
+                <span class="badge ok">1.6</span>
             </div>
             <div class="ranking-item">
                 <span class="ranking-pos">3</span>
                 <div class="ranking-info">
-                    <p>Ana Martínez</p>
+                    <p>María García</p>
                     <div class="barra"><span style="width: 82%"></span></div>
                 </div>
-                <span class="badge ok">4.4</span>
+                <span class="badge ok">1.9</span>
             </div>
             <div class="ranking-item">
                 <span class="ranking-pos">4</span>
@@ -90,8 +89,8 @@
             <div class="alerta-item">
                 <span class="alert-icon warn">⚠</span>
                 <div class="alerta-info">
-                    <p>Roberto Díaz</p>
-                    <p class="small muted">Promedio: 2.8 — Por debajo del mínimo</p>
+                    <p>{{ pma.maestro }}</p>
+                    <p class="small muted">Promedio: {{ pma.calificacion_promedio }} — Por debajo del mínimo</p>
                 </div>
                 <span class="badge off">Crítico</span>
             </div>
@@ -175,13 +174,13 @@
         data: {
             labels: ['11°', '10°', '9°', '8°', '7°', '6°'],
             datasets: [{
-                data: [210, 195, 220, 185, 200, 190],
+                data: [ "{{ n_e_1 }}", "{{ n_e_2 }}", "{{ n_e_3 }}", "{{ n_e_4 }}", "{{ n_e_5 }}", "{{ n_e_6 }}" ],
                 backgroundColor: [
-                    'rgba(59, 130, 246, 0.8)',
+                    'rgba(242, 85, 90, 0.8)',
                     'rgba(34, 211, 238, 0.8)',
                     'rgba(34, 197, 94, 0.8)',
                     'rgba(245, 158, 11, 0.8)',
-                    'rgba(242, 85, 90, 0.8)',
+                    'rgba(59, 130, 246, 0.8)',
                     'rgba(127, 141, 166, 0.8)'
                 ],
                 borderColor: '#10151f',

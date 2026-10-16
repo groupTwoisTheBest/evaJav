@@ -151,6 +151,73 @@ SELECT m.nombre AS maestro, ROUND(AVG((e.actitudinal + e.actividades + e.metodol
     ORDER BY calificacion_promedio ASC
     LIMIT 5;
 
+--tabla de barras
+SELECT 
+    ROUND(AVG(promedio_general), 2) AS promedio_total_grado_once
+FROM (
+    SELECT 
+        (e.actitudinal + e.actividades + e.metodologia) / 3.0 AS promedio_general
+    FROM evaluaciones e
+    JOIN asignaciones a ON e.id_asignacion = a.id
+    JOIN grados g ON a.id_grado = g.id_grado
+    WHERE g.nombre_grado = '11'
+) AS subconsulta;
+
+SELECT 
+    ROUND(AVG(promedio_general), 2) AS promedio_total_grado_once
+FROM (
+    SELECT 
+        (e.actitudinal + e.actividades + e.metodologia) / 3.0 AS promedio_general
+    FROM evaluaciones e
+    JOIN asignaciones a ON e.id_asignacion = a.id
+    JOIN grados g ON a.id_grado = g.id_grado
+    WHERE g.nombre_grado = '10'
+) AS subconsulta;
+
+SELECT 
+    ROUND(AVG(promedio_general), 2) AS promedio_total_grado_once
+FROM (
+    SELECT 
+        (e.actitudinal + e.actividades + e.metodologia) / 3.0 AS promedio_general
+    FROM evaluaciones e
+    JOIN asignaciones a ON e.id_asignacion = a.id
+    JOIN grados g ON a.id_grado = g.id_grado
+    WHERE g.nombre_grado = '9'
+) AS subconsulta;
+
+SELECT 
+    ROUND(AVG(promedio_general), 2) AS promedio_total_grado_once
+FROM (
+    SELECT 
+        (e.actitudinal + e.actividades + e.metodologia) / 3.0 AS promedio_general
+    FROM evaluaciones e
+    JOIN asignaciones a ON e.id_asignacion = a.id
+    JOIN grados g ON a.id_grado = g.id_grado
+    WHERE g.nombre_grado = '8'
+) AS subconsulta;
+
+SELECT 
+    ROUND(AVG(promedio_general), 2) AS promedio_total_grado_once
+FROM (
+    SELECT 
+        (e.actitudinal + e.actividades + e.metodologia) / 3.0 AS promedio_general
+    FROM evaluaciones e
+    JOIN asignaciones a ON e.id_asignacion = a.id
+    JOIN grados g ON a.id_grado = g.id_grado
+    WHERE g.nombre_grado = '7'
+) AS subconsulta;
+
+SELECT 
+    ROUND(AVG(promedio_general), 2) AS promedio_total_grado_once
+FROM (
+    SELECT 
+        (e.actitudinal + e.actividades + e.metodologia) / 3.0 AS promedio_general
+    FROM evaluaciones e
+    JOIN asignaciones a ON e.id_asignacion = a.id
+    JOIN grados g ON a.id_grado = g.id_grado
+    WHERE g.nombre_grado = '6'
+) AS subconsulta;
+
 --grafica de pastel
 SELECT COUNT(*) FROM estudiantes where id_grado = 1
 SELECT COUNT(*) FROM estudiantes where id_grado = 2

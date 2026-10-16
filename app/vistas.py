@@ -1,6 +1,6 @@
 from typing import Annotated
 from app.dependencias import APIRouter, Depends, Request, Form, status, RedirectResponse, PlainTextResponse, HTMLResponse, Jinja2Templates, logger, ConnectionDep, CurrentUserDep
-from app.repositorio import inicio_sesion as autenticar_estudiante, registrar_estudiante, existe_email, inicio_sesion_admin, select_profesor, nombre_estudiante, registrar_calificacion,n_estudiantes_admin,n_maestros_admin,n_inscripciones_admin,n_grados_admin,n_e_admin_1, n_e_admin_2,n_e_admin_3,n_e_admin_4,n_e_admin_5,n_e_admin_6,mejor_maestro_admin,peor_maestro_admin
+from app.repositorio import inicio_sesion as autenticar_estudiante, registrar_estudiante, existe_email, inicio_sesion_admin, select_profesor, nombre_estudiante, registrar_calificacion,n_estudiantes_admin,n_maestros_admin,n_inscripciones_admin,n_grados_admin,n_e_admin_1, n_e_admin_2,n_e_admin_3,n_e_admin_4,n_e_admin_5,n_e_admin_6,mejor_maestro_admin,peor_maestro_admin,promedio_11_admin, promedio_10_admin,promedio_9_admin,promedio_8_admin,promedio_7_admin,promedio_6_admin
 from app.esquemas import CrearEstudiante, LoginSchema, CalificacionSchema, RegistroSchema, SeleccionProfesorSchema
 from app.seguridad import create_token, verify_token
 
@@ -116,6 +116,7 @@ async def seleccionar_profesor(request: Request, conn: ConnectionDep, email: Cur
         context={"maestro": datos.maestro, "nombre": nombre["nombre"] if nombre else ""}
     )
 
+
 @router.get("/administrador", response_class=HTMLResponse)
 async def read_administrador(request: Request, email: CurrentUserDep,conn: ConnectionDep):
     email = request.cookies.get("token")
@@ -125,6 +126,12 @@ async def read_administrador(request: Request, email: CurrentUserDep,conn: Conne
     ndg = await n_grados_admin(conn)
     mma = await mejor_maestro_admin(conn)
     pma = await peor_maestro_admin(conn)
+    p11 = await promedio_11_admin(conn)
+    p10 = await promedio_10_admin(conn)
+    p9 = await promedio_9_admin(conn)
+    p8 = await promedio_8_admin(conn)
+    p7 = await promedio_7_admin(conn)
+    p6 = await promedio_6_admin(conn)
     n_e_1 = await n_e_admin_1(conn)
     n_e_2 = await n_e_admin_2(conn)
     n_e_3 = await n_e_admin_3(conn)
@@ -135,6 +142,7 @@ async def read_administrador(request: Request, email: CurrentUserDep,conn: Conne
         return RedirectResponse(url="/administrador/iniciar-sesion", status_code=status.HTTP_303_SEE_OTHER)
     return templates.TemplateResponse(request=request, name="administradorMain.html", context={"nde":nde, "ndm":ndm, "ndi":ndi, "ndg":ndg,
                                                                                                "mma": mma, "pma": pma,
+                                                                                               "p11": p11, "p10": p10, "p9": p9, "p8": p8, "p7": p7, "p6": p6,
                                                                                                "n_e_1": n_e_1, "n_e_2": n_e_2, "n_e_3": n_e_3, "n_e_4": n_e_4, "n_e_5": n_e_5, "n_e_6": n_e_6})
 
 

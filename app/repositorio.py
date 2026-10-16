@@ -105,7 +105,7 @@ async def registrar_calificacion(
             )
         """, email, profesor)
 
-async def mejor_maestro_admin(conn) -> list | None:
+async def mejor_maestro_admin(conn) -> dict | None:
     rows = await conn.fetch(
         """
         SELECT m.nombre AS maestro, ROUND(AVG((e.actitudinal + e.actividades + e.metodologia) / 3.0), 2) AS calificacion_promedio
@@ -132,6 +132,108 @@ async def peor_maestro_admin(conn) -> list | None:
         """
     )
     return [dict(row) for row in rows] if rows else None
+
+async def promedio_11_admin(conn) -> str | None:
+    row = await conn.fetchrow(
+        """
+        SELECT 
+    ROUND(AVG(promedio_general), 2) AS promedio_total_grado_once
+FROM (
+    SELECT 
+        (e.actitudinal + e.actividades + e.metodologia) / 3.0 AS promedio_general
+    FROM evaluaciones e
+    JOIN asignaciones a ON e.id_asignacion = a.id
+    JOIN grados g ON a.id_grado = g.id_grado
+    WHERE g.nombre_grado = '11'
+) AS subconsulta;
+        """
+    )
+    return str(row[0]) if row else None
+
+async def promedio_10_admin(conn) -> str | None:
+    row = await conn.fetchrow(
+        """
+        SELECT 
+    ROUND(AVG(promedio_general), 2) AS promedio_total_grado_once
+FROM (
+    SELECT 
+        (e.actitudinal + e.actividades + e.metodologia) / 3.0 AS promedio_general
+    FROM evaluaciones e
+    JOIN asignaciones a ON e.id_asignacion = a.id
+    JOIN grados g ON a.id_grado = g.id_grado
+    WHERE g.nombre_grado = '10'
+) AS subconsulta;
+        """
+    )
+    return str(row[0]) if row else None
+
+async def promedio_9_admin(conn) -> str | None:
+    row = await conn.fetchrow(
+        """
+        SELECT 
+    ROUND(AVG(promedio_general), 2) AS promedio_total_grado_once
+FROM (
+    SELECT 
+        (e.actitudinal + e.actividades + e.metodologia) / 3.0 AS promedio_general
+    FROM evaluaciones e
+    JOIN asignaciones a ON e.id_asignacion = a.id
+    JOIN grados g ON a.id_grado = g.id_grado
+    WHERE g.nombre_grado = '9'
+) AS subconsulta;
+        """
+    )
+    return str(row[0]) if row else None
+
+async def promedio_8_admin(conn) -> str | None:
+    row = await conn.fetchrow(
+        """
+        SELECT 
+    ROUND(AVG(promedio_general), 2) AS promedio_total_grado_once
+FROM (
+    SELECT 
+        (e.actitudinal + e.actividades + e.metodologia) / 3.0 AS promedio_general
+    FROM evaluaciones e
+    JOIN asignaciones a ON e.id_asignacion = a.id
+    JOIN grados g ON a.id_grado = g.id_grado
+    WHERE g.nombre_grado = '8'
+) AS subconsulta;
+        """
+    )
+    return str(row[0]) if row else None
+
+async def promedio_7_admin(conn) -> str | None:
+    row = await conn.fetchrow(
+        """
+        SELECT 
+    ROUND(AVG(promedio_general), 2) AS promedio_total_grado_once
+FROM (
+    SELECT 
+        (e.actitudinal + e.actividades + e.metodologia) / 3.0 AS promedio_general
+    FROM evaluaciones e
+    JOIN asignaciones a ON e.id_asignacion = a.id
+    JOIN grados g ON a.id_grado = g.id_grado
+    WHERE g.nombre_grado = '7'
+) AS subconsulta;
+        """
+    )
+    return str(row[0]) if row else None
+
+async def promedio_6_admin(conn) -> str | None:
+    row = await conn.fetchrow(
+        """
+        SELECT 
+    ROUND(AVG(promedio_general), 2) AS promedio_total_grado_once
+FROM (
+    SELECT 
+        (e.actitudinal + e.actividades + e.metodologia) / 3.0 AS promedio_general
+    FROM evaluaciones e
+    JOIN asignaciones a ON e.id_asignacion = a.id
+    JOIN grados g ON a.id_grado = g.id_grado
+    WHERE g.nombre_grado = '6'
+) AS subconsulta;
+        """
+    )
+    return str(row[0]) if row else None
 
 async def n_estudiantes_admin (conn) -> int | None:
     row = await conn.fetchrow(

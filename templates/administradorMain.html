@@ -37,46 +37,21 @@
         <hr class="divider">
         <div class="profesor-ranking">
             <div class="ranking-item">
-                <span class="ranking-pos">1</span>
+            
                 <div class="ranking-info">
                     
+                    {% for mma in mma %}
+                    <span class="ranking-pos">{{ loop.index }}</span>
                     <p>{{ mma.maestro }}</p>
                     <div class="barra"><span style="width: 92%"></span></div>
                 </div>
-                <span class="badge ok">{{ mma['calificacion_promedio'] }}</span>
+                <span class="badge ok">{{ mma.calificacion_promedio }}</span>
             </div>
             <div class="ranking-item">
-                <span class="ranking-pos">2</span>
+                
                 <div class="ranking-info">
-                    <p>z</p>
-                    <div class="barra"><span style="width: 87%"></span></div>
-                </div>
-                <span class="badge ok">1.6</span>
-            </div>
-            <div class="ranking-item">
-                <span class="ranking-pos">3</span>
-                <div class="ranking-info">
-                    <p>María García</p>
-                    <div class="barra"><span style="width: 82%"></span></div>
-                </div>
-                <span class="badge ok">1.9</span>
-            </div>
-            <div class="ranking-item">
-                <span class="ranking-pos">4</span>
-                <div class="ranking-info">
-                    <p>Pedro Sánchez</p>
-                    <div class="barra"><span style="width: 76%"></span></div>
-                </div>
-                <span class="badge">4.2</span>
-            </div>
-            <div class="ranking-item">
-                <span class="ranking-pos">5</span>
-                <div class="ranking-info">
-                    <p>Laura Rodríguez</p>
-                    <div class="barra"><span style="width: 71%"></span></div>
-                </div>
-                <span class="badge">4.0</span>
-            </div>
+                    {% endfor %}
+
         </div>
         <a href="/centroEstadistico" class="btn ghost mt">Ver estadísticas completas</a>
     </div>
@@ -86,6 +61,9 @@
         <p class="muted small">Promedio bajo o evaluaciones pendientes</p>
         <hr class="divider">
         <div class="alertas-lista">
+
+            
+                 {% for pma in pma %}
             <div class="alerta-item">
                 <span class="alert-icon warn">⚠</span>
                 <div class="alerta-info">
@@ -94,22 +72,7 @@
                 </div>
                 <span class="badge off">Crítico</span>
             </div>
-            <div class="alerta-item">
-                <span class="alert-icon warn">⚠</span>
-                <div class="alerta-info">
-                    <p>Fernando Torres</p>
-                    <p class="small muted">Sin evaluaciones este trimestre</p>
-                </div>
-                <span class="badge warn">Pendiente</span>
-            </div>
-            <div class="alerta-item">
-                <span class="alert-icon">ℹ</span>
-                <div class="alerta-info">
-                    <p>Elena Vargas</p>
-                    <p class="small muted">3 quejas registradas</p>
-                </div>
-                <span class="badge neutral">Revisar</span>
-            </div>
+               {% endfor %}
         </div>
         <a href="/gestionProfesores" class="btn ghost mt">Gestionar profesores</a>
     </div>
@@ -150,7 +113,7 @@
             labels: ['11°', '10°', '9°', '8°', '7°', '6°'],
             datasets: [{
                 label: 'Promedio',
-                data: [4.2, 3.9, 4.5, 3.7, 4.1, 4.3],
+                data: ['{{ p11 }}', '{{ p10 }}', '{{ p9 }}', '{{ p8 }}', '{{ p7 }}', '{{ p6 }}'],
                 backgroundColor: 'rgba(59, 130, 246, 0.6)',
                 borderColor: 'rgba(59, 130, 246, 1)',
                 borderWidth: 1,

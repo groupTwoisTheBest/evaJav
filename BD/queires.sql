@@ -226,6 +226,84 @@ SELECT COUNT(*) FROM estudiantes where id_grado = 4
 SELECT COUNT(*) FROM estudiantes where id_grado = 5
 SELECT COUNT(*) FROM estudiantes where id_grado = 6
 
+--centro de control
+WITH estudiantes_por_grado AS (
+    -- Cuenta los estudiantes matriculados en cada grado
+    SELECT 
+        id_grado, 
+        COUNT(id) AS total_estudiantes
+    FROM estudiantes
+    GROUP BY id_grado
+),
+promedios_asignacion AS (
+    -- Obtiene el promedio de cada asignación (promedio de los 3 criterios)
+    SELECT 
+        a.id AS id_asignacion,
+        a.id_grado,
+        a.id_profesor,
+        m.nombre AS nombre_profesor,
+        ((ev.actitudinal + ev.actividades + ev.metodologia) / 3.0) AS promedio_asignacion
+    FROM asignaciones a
+    JOIN maestros m ON m.id = a.id_profesor
+    LEFT JOIN evaluaciones ev ON ev.id_asignacion = a.id
+),
+promedio_por_profesor AS (
+    -- Agrupa el promedio general por cada profesor dentro de su grado
+    SELECT 
+        id_grado,
+        id_profesor,
+        nombre_profesor,
+        AVG(promedio_asignacion) AS promedio_profesor
+    FROM promedios_asignacion
+    GROUP BY id_grado, id_profesor, nombre_profesor
+),
+mejor_profesor_grado AS (
+    -- Selecciona al profesor con la calificación más alta por grado
+    SELECT 
+        id_grado,
+        nombre_profesor,
+        ROW_NUMBER() OVER (PARTITION BY id_grado ORDER BY promedio_profesor DESC NULLS LAST) AS rn
+    FROM promedio_por_profesor
+),
+promedio_general_grado AS (
+    -- Calcula el promedio general acumulado de todas las evaluaciones del grado
+    SELECT 
+        id_grado,
+        AVG(promedio_asignacion) AS promedio_general
+    FROM promedios_asignacion
+    GROUP BY id_grado
+),
+estado_periodo AS (
+    -- Obtiene el estado del periodo asociado al grado (si hay varios, toma el más reciente)
+    SELECT DISTINCT ON (a.id_grado)
+        a.id_grado,
+        p.estado
+    FROM asignaciones a
+    JOIN periodos p ON p.id = a.id_periodo
+    ORDER BY a.id_grado, p.id DESC
+)
+SELECT 
+    g.nombre_grado AS Grado,
+    COUNT(DISTINCT a.id_profesor) AS Numero_de_Profesores,
+    COALESCE(epg.total_estudiantes, 0) AS Estudiantes,
+    ROUND(COALESCE(pgg.promedio_general, 0), 2) AS Promedio_General,
+    COALESCE(mpg.nombre_profesor, 'Sin evaluaciones') AS Mejor_Profesor,
+    COALESCE(ep.estado, 'Sin periodo') AS Estado
+FROM grados g
+LEFT JOIN estudiantes_por_grado epg ON epg.id_grado = g.id_grado
+LEFT JOIN asignaciones a ON a.id_grado = g.id_grado
+LEFT JOIN promedio_general_grado pgg ON pgg.id_grado = g.id_grado
+LEFT JOIN mejor_profesor_grado mpg ON mpg.id_grado = g.id_grado AND mpg.rn = 1
+LEFT JOIN estado_periodo ep ON ep.id_grado = g.id_grado
+GROUP BY 
+    g.id_grado, 
+    g.nombre_grado, 
+    epg.total_estudiantes, 
+    pgg.promedio_general, 
+    mpg.nombre_profesor, 
+    ep.estado
+ORDER BY g.id_grado ASC;
+
 
 -- ------------------------------------------------------------
 -- 4. MANTENIMIENTO Y CORRECCIÓN DE DATOS

@@ -52,20 +52,6 @@
     </div>
 </div>
 
-<!-- Tendencia + Rendimiento por categoría -->
-<div class="grid">
-    <div class="card">
-        <h3>Tendencia de Evaluaciones</h3>
-        <p class="muted small">Evaluaciones realizadas por mes</p>
-        <div class="chart"><canvas id="chartTendencia"></canvas></div>
-    </div>
-    <div class="card">
-        <h3>Rendimiento por Categoría</h3>
-        <p class="muted small">Promedio por área de evaluación</p>
-        <div class="chart"><canvas id="chartCategorias"></canvas></div>
-    </div>
-</div>
-
 <!-- Detalle por grado -->
 <div class="card">
     <h3>Detalle por Grado</h3>
@@ -83,54 +69,16 @@
                 </tr>
             </thead>
             <tbody>
+                {% for dpg in dpg %}
                 <tr>
-                    <td>11°</td>
-                    <td>28</td>
-                    <td>210</td>
-                    <td><span class="badge ok">4.2</span></td>
-                    <td>Carlos López</td>
-                    <td><span class="badge ok">Óptimo</span></td>
+                    <td>{{ dpg.grado }}</td>
+                    <td>{{ dpg.numero_de_profesores }}</td>
+                    <td>{{ dpg.estudiantes }}</td>
+                    <td><span class="badge ok">{{ dpg.promedio_general }}</span></td>
+                    <td>{{ dpg.mejor_profesor }}</td>
+                    <td><span class="badge ok">{{ dpg.estado }}</span></td>
                 </tr>
-                <tr>
-                    <td>10°</td>
-                    <td>26</td>
-                    <td>195</td>
-                    <td><span class="badge ok">3.9</span></td>
-                    <td>Ana Martínez</td>
-                    <td><span class="badge ok">Bueno</span></td>
-                </tr>
-                <tr>
-                    <td>9°</td>
-                    <td>30</td>
-                    <td>220</td>
-                    <td><span class="badge ok">4.5</span></td>
-                    <td>María García</td>
-                    <td><span class="badge ok">Óptimo</span></td>
-                </tr>
-                <tr>
-                    <td>8°</td>
-                    <td>24</td>
-                    <td>185</td>
-                    <td><span class="badge warn">3.7</span></td>
-                    <td>Pedro Sánchez</td>
-                    <td><span class="badge warn">Mejorable</span></td>
-                </tr>
-                <tr>
-                    <td>7°</td>
-                    <td>22</td>
-                    <td>200</td>
-                    <td><span class="badge ok">4.1</span></td>
-                    <td>Laura Rodríguez</td>
-                    <td><span class="badge ok">Bueno</span></td>
-                </tr>
-                <tr>
-                    <td>6°</td>
-                    <td>20</td>
-                    <td>190</td>
-                    <td><span class="badge ok">4.3</span></td>
-                    <td>Miguel Herrera</td>
-                    <td><span class="badge ok">Óptimo</span></td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
@@ -161,9 +109,9 @@
     new Chart(document.getElementById('chartMejores'), {
         type: 'bar',
         data: {
-            labels: ['M. García', 'C. López', 'A. Martínez', 'P. Sánchez', 'L. Rodríguez', 'M. Herrera', 'S. Castro', 'R. Muñoz', 'F. Reyes', 'C. Vega'],
+            labels:[ {% if mma %}{% for mma in mma %}'{{ mma.maestro}}',{% endfor %}{% endif %}],   
             datasets: [{
-                data: [4.8, 4.6, 4.4, 4.2, 4.0, 3.9, 3.8, 3.7, 3.6, 3.5],
+                data:[ {% if mma %}{% for mma in mma %}{{ mma.calificacion_promedio}},{% endfor %}{% endif %}],
                 backgroundColor: colores.azul,
                 borderRadius: 4
             }]
@@ -178,11 +126,11 @@
     new Chart(document.getElementById('chartProblemas'), {
         type: 'bar',
         data: {
-            labels: ['R. Díaz', 'F. Torres', 'E. Vargas', 'J. Silva', 'L. Navarro'],
+            labels:[ {% if pma %}{% for pma in pma %}'{{ pma.maestro}}',{% endfor %}{% endif %}],
             datasets: [{
-                data: [2.8, 3.0, 3.2, 3.3, 3.4],
+                data:[ {% if pma %}{% for pma in pma %}'{{ pma.calificacion_promedio}}',{% endfor %}{% endif %}],
                 backgroundColor: colores.rojo,
-                borderRadius: 4
+                borderRadius: 4 
             }]
         },
         options: {
@@ -195,54 +143,6 @@
         }
     });
 
-    // Tendencia de Evaluaciones
-    new Chart(document.getElementById('chartTendencia'), {
-        type: 'line',
-        data: {
-            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep'],
-            datasets: [{
-                label: 'Evaluaciones',
-                data: [12, 19, 15, 22, 18, 25, 20, 28, 32],
-                borderColor: colores.azul,
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: {
-            ...opcionesBase,
-            plugins: { legend: { display: true, labels: { color: '#7f8da6' } } }
-        }
-    });
-
-    // Rendimiento por Categoría
-    new Chart(document.getElementById('chartCategorias'), {
-        type: 'radar',
-        data: {
-            labels: ['Didáctica', 'Puntualidad', 'Comunicación', 'Material', 'Evaluación'],
-            datasets: [{
-                label: 'Promedio General',
-                data: [4.2, 4.0, 3.8, 3.5, 4.1],
-                borderColor: colores.azul,
-                backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                pointBackgroundColor: colores.azul
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { labels: { color: '#7f8da6' } } },
-            scales: {
-                r: {
-                    beginAtZero: true,
-                    max: 5,
-                    ticks: { color: '#7f8da6', backdropColor: 'transparent' },
-                    grid: { color: 'rgba(30,38,54,0.5)' },
-                    pointLabels: { color: '#7f8da6' }
-                }
-            }
-        }
-    });
 </script>
 
 {% endblock %}

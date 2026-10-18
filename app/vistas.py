@@ -1,6 +1,6 @@
 from typing import Annotated
 from app.dependencias import APIRouter, Depends, Request, Form, status, RedirectResponse, PlainTextResponse, HTMLResponse, Jinja2Templates, logger, ConnectionDep, CurrentUserDep
-from app.repositorio import inicio_sesion as autenticar_estudiante, registrar_estudiante, existe_email, inicio_sesion_admin, select_profesor, nombre_estudiante, registrar_calificacion,n_estudiantes_admin,n_maestros_admin,n_inscripciones_admin,n_grados_admin,n_e_admin_1, n_e_admin_2,n_e_admin_3,n_e_admin_4,n_e_admin_5,n_e_admin_6,mejor_maestro_admin,peor_maestro_admin,promedio_11_admin, promedio_10_admin,promedio_9_admin,promedio_8_admin,promedio_7_admin,promedio_6_admin
+from app.repositorio import inicio_sesion as autenticar_estudiante, registrar_estudiante, existe_email, inicio_sesion_admin, select_profesor, nombre_estudiante, registrar_calificacion,n_estudiantes_admin,n_maestros_admin,n_inscripciones_admin,n_grados_admin,n_e_admin_1, n_e_admin_2,n_e_admin_3,n_e_admin_4,n_e_admin_5,n_e_admin_6,mejor_maestro_admin,peor_maestro_admin,promedio_11_admin, promedio_10_admin,promedio_9_admin,promedio_8_admin,promedio_7_admin,promedio_6_admin,detalle_por_grado
 from app.esquemas import CrearEstudiante, LoginSchema, CalificacionSchema, RegistroSchema, SeleccionProfesorSchema
 from app.seguridad import create_token, verify_token
 
@@ -116,6 +116,14 @@ async def seleccionar_profesor(request: Request, conn: ConnectionDep, email: Cur
         context={"maestro": datos.maestro, "nombre": nombre["nombre"] if nombre else ""}
     )
 
+@router.get("/centroEstadistico", response_class=HTMLResponse)
+async def read_centro_estadistico(request: Request,conn: ConnectionDep):
+
+    mma = await mejor_maestro_admin(conn)   
+    pma = await peor_maestro_admin(conn)
+    dpg = await detalle_por_grado(conn)
+    return templates.TemplateResponse(request=request, name="centroEstadistico.html", context={"mma": mma, "pma": pma, "dpg": dpg})
+
 
 @router.get("/administrador", response_class=HTMLResponse)
 async def read_administrador(request: Request, email: CurrentUserDep,conn: ConnectionDep):
@@ -145,6 +153,19 @@ async def read_administrador(request: Request, email: CurrentUserDep,conn: Conne
                                                                                                "p11": p11, "p10": p10, "p9": p9, "p8": p8, "p7": p7, "p6": p6,
                                                                                                "n_e_1": n_e_1, "n_e_2": n_e_2, "n_e_3": n_e_3, "n_e_4": n_e_4, "n_e_5": n_e_5, "n_e_6": n_e_6})
 
+@router.get("/gestionGrados", response_class=HTMLResponse)
+async def read_gestion_grados(request: Request,conn: ConnectionDep):
+    n_e_1 = await n_e_admin_1(conn)
+    n_e_2 = await n_e_admin_2(conn)
+    n_e_3 = await n_e_admin_3(conn)
+    n_e_4 = await n_e_admin_4(conn)
+    n_e_5 = await n_e_admin_5(conn)
+    n_e_6 = await n_e_admin_6(conn)
+    nde = await n_estudiantes_admin(conn)
+    ndm = await n_maestros_admin(conn)
+    ndg = await n_grados_admin(conn)
+    return templates.TemplateResponse(request=request, name="gestionGrados.html", context={"n_e_1": n_e_1, "n_e_2": n_e_2, "n_e_3": n_e_3, "n_e_4": n_e_4, "n_e_5": n_e_5, "n_e_6": n_e_6,
+                                                                                           "nde":nde, "ndm":ndm, "ndg":ndg})
 
 @router.get("/gestionProfesores", response_class=HTMLResponse)
 async def read_gestion_profesores(request: Request):
@@ -154,12 +175,6 @@ async def read_gestion_profesores(request: Request):
 @router.get("/gestionProfesoresInformacion", response_class=HTMLResponse)
 async def read_gestion_profesores_informacion(request: Request):
     return templates.TemplateResponse(request=request, name="gestionProfesoresInformacion.html", context={})
-
-
-@router.get("/centroEstadistico", response_class=HTMLResponse)
-async def read_centro_estadistico(request: Request):
-    return templates.TemplateResponse(request=request, name="centroEstadistico.html", context={})
-
 
 @router.get("/configuracion", response_class=HTMLResponse)
 async def configuracion(request: Request):

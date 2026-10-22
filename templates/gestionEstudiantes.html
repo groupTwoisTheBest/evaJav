@@ -22,12 +22,12 @@
         <div>
             <select class="input">
                 <option value="">Todos los grados</option>
-                <option value="1">1° Básico</option>
-                <option value="2">2° Básico</option>
-                <option value="3">3° Básico</option>
-                <option value="4">4° Básico</option>
-                <option value="5">5° Básico</option>
-                <option value="6">6° Básico</option>
+                <option value="1">11°</option>
+                <option value="2">10°</option>
+                <option value="3">9°</option>
+                <option value="4">8°</option>
+                <option value="5">7°</option>
+                <option value="6">6°</option>
             </select>
         </div>
     </div>
@@ -41,71 +41,24 @@
                 <tr>
                     <th>Nombre</th>
                     <th>Email</th>
-                    <th>Grado</th>
+                    <th>Grado </th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
+                {% for estudiantes in estudiantes %}
                 <tr>
-                    <td>Juan Pérez</td>
-                    <td>juan.perez@email.com</td>
-                    <td><span class="badge">3° Básico</span></td>
+                    <td>{{ estudiantes.nombre_estudiante }}</td>
+                    <td>{{ estudiantes.email }}</td>
+                    <td><span class="badge">{{ estudiantes.grado }}</span></td>
                     <td>
                         <div class="row-actions">
-                            <a href="/gestionEstudiantes/1" class="btn sm ghost">Ver</a>
-                            <a href="/gestionEstudiantes/1/editar" class="btn sm ghost">Editar</a>
-                            <button class="btn sm danger">Eliminar</button>
+                            <button hx-get="/gestionEstudiantes/{{ estudiantes.id_estudiante }}/editar" hx-target="closest tr" hx-swap="outerHTML" class="btn sm ghost">Editar</button>
+                            <button hx-delete="/gestionEstudiantes/{{ estudiantes.id_estudiante }}/eliminar" hx-target="closest tr" hx-swap="outerHTML" class="btn sm danger" >Eliminar</button>
                         </div>
                     </td>
                 </tr>
-                <tr>
-                    <td>Valentina Rojas</td>
-                    <td>valentina.rojas@email.com</td>
-                    <td><span class="badge">1° Básico</span></td>
-                    <td>
-                        <div class="row-actions">
-                            <a href="/gestionEstudiantes/2" class="btn sm ghost">Ver</a>
-                            <a href="/gestionEstudiantes/2/editar" class="btn sm ghost">Editar</a>
-                            <button class="btn sm danger">Eliminar</button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Diego Morales</td>
-                    <td>diego.morales@email.com</td>
-                    <td><span class="badge">5° Básico</span></td>
-                    <td>
-                        <div class="row-actions">
-                            <a href="/gestionEstudiantes/3" class="btn sm ghost">Ver</a>
-                            <a href="/gestionEstudiantes/3/editar" class="btn sm ghost">Editar</a>
-                            <button class="btn sm danger">Eliminar</button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Isabella Torres</td>
-                    <td>isabella.torres@email.com</td>
-                    <td><span class="badge">2° Básico</span></td>
-                    <td>
-                        <div class="row-actions">
-                            <a href="/gestionEstudiantes/4" class="btn sm ghost">Ver</a>
-                            <a href="/gestionEstudiantes/4/editar" class="btn sm ghost">Editar</a>
-                            <button class="btn sm danger">Eliminar</button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Matías Fernández</td>
-                    <td>matias.fernandez@email.com</td>
-                    <td><span class="badge">4° Básico</span></td>
-                    <td>
-                        <div class="row-actions">
-                            <a href="/gestionEstudiantes/5" class="btn sm ghost">Ver</a>
-                            <a href="/gestionEstudiantes/5/editar" class="btn sm ghost">Editar</a>
-                            <button class="btn sm danger">Eliminar</button>
-                        </div>
-                    </td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>

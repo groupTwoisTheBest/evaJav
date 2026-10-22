@@ -6,42 +6,13 @@
 <div class="head">
     <p class="kicker">Estadísticas</p>
     <h1>Centro Estadístico</h1>
-    <p class="muted">Análisis detallado del rendimiento docente por grado.</p>
-</div>
-
-<!-- Filtros -->
-<div class="card">
-    <div class="form-inline">
-        <div>
-            <label for="periodo">Período</label>
-            <select class="input" id="periodo">
-                <option value="mes">Este mes</option>
-                <option value="trimestre">Este trimestre</option>
-                <option value="ano">Este año</option>
-            </select>
-        </div>
-        <div>
-            <label for="grado">Grado</label>
-            <select class="input" id="grado">
-                <option value="">Todos los grados</option>
-                <option value="1">11°</option>
-                <option value="2">10°</option>
-                <option value="3">9°</option>
-                <option value="4">8°</option>
-                <option value="5">7°</option>
-                <option value="6">6°</option>
-            </select>
-        </div>
-        <div>
-            <button class="btn" style="margin-top: 1.5rem;">Aplicar Filtros</button>
-        </div>
-    </div>
+    <p class="muted">Análisis detallado del rendimiento de los docentes.</p>
 </div>
 
 <!-- Top Profesores + Profesores con problemas -->
 <div class="grid">
     <div class="card">
-        <h3>Top 10 Mejores Profesores</h3>
+        <h3>Top 5 Mejores Profesores</h3>
         <p class="muted small">Por promedio de evaluación</p>
         <div class="chart"><canvas id="chartMejores"></canvas></div>
     </div>

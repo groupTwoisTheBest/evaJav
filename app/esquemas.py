@@ -9,14 +9,16 @@ class CrearEstudiante(BaseModel):
     grado: int
 
 
+class GuardarEstudiante(BaseModel):
+    nombre: Annotated[str, Field(min_length=1, max_length=100)]
+    email: EmailStr
+    grado: int
+
 class LoginSchema(BaseModel):
     email: EmailStr
     contrasenna: Annotated[str, Field(min_length=1)]
 
 
-class RegistroSchema(BaseModel):
-    nombre: Annotated[str, Field(min_length=1, max_length=100)]
-    contrasenna: Annotated[str, Field(min_length=8, max_length=100)]
 
 
 class CalificacionSchema(BaseModel):

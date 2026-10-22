@@ -298,11 +298,20 @@ LEFT JOIN estado_periodo ep ON ep.id_grado = g.id_grado
 GROUP BY 
     g.id_grado, 
     g.nombre_grado, 
-    epg.total_estudiantes, 
+    epg.total_estudiantes, -- no creo que esto haga algo, pero lo dejo por si acaso
     pgg.promedio_general, 
     mpg.nombre_profesor, 
     ep.estado
 ORDER BY g.id_grado ASC;
+
+SELECT 
+    e.id AS id_estudiante,
+    e.nombre AS nombre_estudiante,
+    e.email,
+    g.nombre_grado AS grado
+FROM estudiantes e
+JOIN grados g ON e.id_grado = g.id_grado;
+
 
 
 -- ------------------------------------------------------------

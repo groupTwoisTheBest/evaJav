@@ -296,6 +296,28 @@ async def n_e_admin_6 (conn) -> int | None:
     )
     return int(row[0]) if row else None
 
+async def estadisticas_admin(conn):
+    return {
+    "nde": await n_estudiantes_admin(conn),     
+    "ndm": await n_maestros_admin(conn),
+    "ndi": await n_inscripciones_admin(conn),
+    "ndg": await n_grados_admin(conn),
+    "mma": await mejor_maestro_admin(conn),
+    "pma": await peor_maestro_admin(conn),
+    "p11": await promedio_11_admin(conn),
+    "p10": await promedio_10_admin(conn),
+    "p9": await promedio_9_admin(conn),
+    "p8": await promedio_8_admin(conn),
+    "p7": await promedio_7_admin(conn),
+    "p6": await promedio_6_admin(conn),
+    "n_e_1": await n_e_admin_1(conn),
+    "n_e_2": await n_e_admin_2(conn),
+    "n_e_3": await n_e_admin_3(conn),
+    "n_e_4": await n_e_admin_4(conn),
+    "n_e_5": await n_e_admin_5(conn),
+    "n_e_6": await n_e_admin_6(conn)
+    }
+
 async def detalle_por_grado (conn) -> dict | None:
     rows = await conn.fetch("""
         WITH estudiantes_por_grado AS (
@@ -376,4 +398,56 @@ GROUP BY
 ORDER BY g.id_grado ASC;
 """
     )
-    return [dict(row) for row in rows] if rows else None        
+    return [dict(row) for row in rows] if rows else None     
+
+async def detalle_estudiantes(conn) -> list[dict]:
+    rows = await conn.fetch("""
+        SELECT 
+            e.id AS id_estudiante,
+            e.nombre AS nombre_estudiante,
+            e.email,
+            g.nombre_grado AS grado
+        FROM estudiantes e
+        JOIN grados g ON e.id_grado = g.id_grado;
+    """)
+    return [dict(row) for row in rows] if rows else None   
+
+async def actualizarectudiante(conn, id_estudiante: int, nombre: str, email: str, grado: int) -> dict | None:
+    row =await conn.fetchrow(
+       """
+       UPDATE estudiantes
+       SET nombre = $1, email = $2, id_grado = $3
+       WHERE id = $4
+       RETURNING *
+       """,
+       nombre, email, grado, id_estudiante
+        )
+    return dict(row) if row else None
+
+async def detalle_por_estudiantes(conn, id_estudiante: int) -> dict | None:
+    row = await conn.fetchrow("""
+        SELECT 
+            e.id AS id_estudiante,
+            e.nombre AS nombre_estudiante,
+            e.email,
+            g.nombre_grado AS grado
+        FROM estudiantes e
+        JOIN grados g ON e.id_grado = g.id_grado
+        WHERE e.id = $1
+    """, id_estudiante)
+    return dict(row) if row else None   
+
+async def eliminar_estudiante(conn, id_estudiante: int) -> bool:
+    result = await conn.execute(
+        """
+    DELETE FROM inscripciones
+    WHERE id_estudiante = $1
+
+        """,id_estudiante
+    )
+    await conn.execute(
+        """
+    DELETE FROM estudiantes
+    WHERE id = $1
+        """,id_estudiante)
+    return result == "DELETE 1"

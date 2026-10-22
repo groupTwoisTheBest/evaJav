@@ -1,0 +1,22 @@
+                <tr>
+                    <td><input type="text" value="{{ estudiante.nombre_estudiante }}" class="input" name="nombre"></td>
+                    <td><input type="email" value="{{ estudiante.email }}" class="input" name="email"></td>
+                    <td>
+                        <select class="input" id="grado" name="grado" required>
+                    <option value="" disabled selected>grupo actual: {{ estudiante.grado }}</option>
+                    <option value="1">11</option>
+                    <option value="2">10</option>
+                    <option value="3">9</option>
+                    <option value="4">8</option>
+                    <option value="5">7</option>
+                    <option value="6">6</option>
+               </select>
+                    </td>
+                    <td>
+                        <div class="row-actions">
+                            
+                            <button hx-put ="/gestionEstudiantes/{{ estudiante.id_estudiante }}/guardar" hx-include="closest tr" hx-target="closest tr" hx-swap="outerHTML" class="btn sm ghost">guardar</button>
+                            <button hx-get="/gestionEstudiantes/cancelar" class="btn sm ghost">cancelar</button>
+                        </div>
+                    </td>
+                </tr>

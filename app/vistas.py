@@ -1,9 +1,9 @@
 from typing import Annotated
 from app.dependencias import APIRouter, Depends, Request, Form, status, RedirectResponse, PlainTextResponse, HTMLResponse, Jinja2Templates, logger, ConnectionDep, CurrentUserDep
-from app.repositorio import inicio_sesion as autenticar_estudiante, registrar_estudiante, existe_email, inicio_sesion_admin, select_profesor, nombre_estudiante, registrar_calificacion,n_estudiantes_admin,n_maestros_admin,n_inscripciones_admin,n_grados_admin,n_e_admin_1, n_e_admin_2,n_e_admin_3,n_e_admin_4,n_e_admin_5,n_e_admin_6,mejor_maestro_admin,peor_maestro_admin,promedio_11_admin, promedio_10_admin,promedio_9_admin,promedio_8_admin,promedio_7_admin,promedio_6_admin,detalle_por_grado
-from app.esquemas import CrearEstudiante, LoginSchema, CalificacionSchema, RegistroSchema, SeleccionProfesorSchema
-from app.seguridad import create_token, verify_token
-
+from app.repositorio import inicio_sesion as autenticar_estudiante, registrar_estudiante, existe_email, inicio_sesion_admin, select_profesor, nombre_estudiante, registrar_calificacion,estadisticas_admin, detalle_por_grado,detalle_estudiantes,detalle_por_estudiantes,actualizarectudiante, eliminar_estudiante
+from app.esquemas import CrearEstudiante, GuardarEstudiante, LoginSchema, CalificacionSchema, SeleccionProfesorSchema
+from app.seguridad import create_token  
+from fastapi.responses import Response
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
@@ -23,10 +23,6 @@ async def registrarse(request: Request):
     return templates.TemplateResponse(request=request, name="registrarse.html", context={})
 
 
-@router.post("/registrarse")
-async def registrarse_post(datos: Annotated[RegistroSchema, Form()]):
-    # TODO: Implementar lógica de persistencia de registro (inserción en DB, hashing de contraseña, etc.)
-    return PlainTextResponse("TODO: Implementar lógica de registro", status_code=501)
 
 
 @router.post("/login")
@@ -118,63 +114,34 @@ async def seleccionar_profesor(request: Request, conn: ConnectionDep, email: Cur
 
 @router.get("/centroEstadistico", response_class=HTMLResponse)
 async def read_centro_estadistico(request: Request,conn: ConnectionDep):
-
-    mma = await mejor_maestro_admin(conn)   
-    pma = await peor_maestro_admin(conn)
+    contexto= await estadisticas_admin(conn)
     dpg = await detalle_por_grado(conn)
-    return templates.TemplateResponse(request=request, name="centroEstadistico.html", context={"mma": mma, "pma": pma, "dpg": dpg})
+    return templates.TemplateResponse(request=request, name="centroEstadistico.html", context={**contexto, "dpg": dpg})
 
 
 @router.get("/administrador", response_class=HTMLResponse)
 async def read_administrador(request: Request, email: CurrentUserDep,conn: ConnectionDep):
-    email = request.cookies.get("token")
-    nde = await n_estudiantes_admin(conn)
-    ndm = await n_maestros_admin(conn)
-    ndi = await n_inscripciones_admin(conn)
-    ndg = await n_grados_admin(conn)
-    mma = await mejor_maestro_admin(conn)
-    pma = await peor_maestro_admin(conn)
-    p11 = await promedio_11_admin(conn)
-    p10 = await promedio_10_admin(conn)
-    p9 = await promedio_9_admin(conn)
-    p8 = await promedio_8_admin(conn)
-    p7 = await promedio_7_admin(conn)
-    p6 = await promedio_6_admin(conn)
-    n_e_1 = await n_e_admin_1(conn)
-    n_e_2 = await n_e_admin_2(conn)
-    n_e_3 = await n_e_admin_3(conn)
-    n_e_4 = await n_e_admin_4(conn)
-    n_e_5 = await n_e_admin_5(conn)
-    n_e_6 = await n_e_admin_6(conn)
+    contexto= await estadisticas_admin(conn)
     if not email:
         return RedirectResponse(url="/administrador/iniciar-sesion", status_code=status.HTTP_303_SEE_OTHER)
-    return templates.TemplateResponse(request=request, name="administradorMain.html", context={"nde":nde, "ndm":ndm, "ndi":ndi, "ndg":ndg,
-                                                                                               "mma": mma, "pma": pma,
-                                                                                               "p11": p11, "p10": p10, "p9": p9, "p8": p8, "p7": p7, "p6": p6,
-                                                                                               "n_e_1": n_e_1, "n_e_2": n_e_2, "n_e_3": n_e_3, "n_e_4": n_e_4, "n_e_5": n_e_5, "n_e_6": n_e_6})
+    return templates.TemplateResponse(request=request, name="administradorMain.html", context=contexto)
 
 @router.get("/gestionGrados", response_class=HTMLResponse)
 async def read_gestion_grados(request: Request,conn: ConnectionDep):
-    n_e_1 = await n_e_admin_1(conn)
-    n_e_2 = await n_e_admin_2(conn)
-    n_e_3 = await n_e_admin_3(conn)
-    n_e_4 = await n_e_admin_4(conn)
-    n_e_5 = await n_e_admin_5(conn)
-    n_e_6 = await n_e_admin_6(conn)
-    nde = await n_estudiantes_admin(conn)
-    ndm = await n_maestros_admin(conn)
-    ndg = await n_grados_admin(conn)
-    return templates.TemplateResponse(request=request, name="gestionGrados.html", context={"n_e_1": n_e_1, "n_e_2": n_e_2, "n_e_3": n_e_3, "n_e_4": n_e_4, "n_e_5": n_e_5, "n_e_6": n_e_6,
-                                                                                           "nde":nde, "ndm":ndm, "ndg":ndg})
+    contexto= await estadisticas_admin(conn)
+    return templates.TemplateResponse(request=request, name="gestionGrados.html", context=contexto)
+
+@router.get("/gestionGrados/nuevo", response_class=HTMLResponse)
+async def read_gestion_grados_nuevo(request: Request):
+    return templates.TemplateResponse(request=request, name="gestionGradoNuevo.html", context={})
 
 @router.get("/gestionProfesores", response_class=HTMLResponse)
 async def read_gestion_profesores(request: Request):
     return templates.TemplateResponse(request=request, name="gestionProfesores.html", context={})
 
-
-@router.get("/gestionProfesoresInformacion", response_class=HTMLResponse)
-async def read_gestion_profesores_informacion(request: Request):
-    return templates.TemplateResponse(request=request, name="gestionProfesoresInformacion.html", context={})
+@router.get("/gestionProfesores/nuevo", response_class=HTMLResponse)
+async def read_gestion_profesores_nuevo(request: Request):
+    return templates.TemplateResponse(request=request, name="gestionProfesoresNuevo.html", context={})
 
 @router.get("/configuracion", response_class=HTMLResponse)
 async def configuracion(request: Request):
@@ -184,14 +151,21 @@ async def configuracion(request: Request):
 # ============ GESTIÓN DE ESTUDIANTES ============
 
 @router.get("/gestionEstudiantes", response_class=HTMLResponse)
-async def read_gestion_estudiantes(request: Request):
-    return templates.TemplateResponse(request=request, name="gestionEstudiantes.html", context={})
+async def read_gestion_estudiantes(request: Request, conn: ConnectionDep):
+    estudiantes = await detalle_estudiantes(conn)
+    return templates.TemplateResponse(request=request, name="gestionEstudiantes.html", context={"estudiantes": estudiantes})
 
-@router.get("/gestionEstudiantes/nuevo", response_class=HTMLResponse)
-async def nuevo_estudiante_form(request: Request):
-    return templates.TemplateResponse(request=request, name="gestionEstudiantesForm.html", context={"titulo": "Nuevo Estudiante", "accion": "/gestionEstudiantes/nuevo"})
+@router.get("/gestionEstudiantes/cancelar", response_class=HTMLResponse)
+async def cancelar_edicion(request: Request):
+    
+    return Response(status_code=303, headers={"HX-Redirect": "/gestionEstudiantes"})
+    
 
-@router.post("/gestionEstudiantes/nuevo")
+@router.get("/gestionEstudiantes/nuevo")
+async def crear_estudiante_get(request: Request):
+    return templates.TemplateResponse(request=request, name="gestionEstudiantesNuevo.html", context={})
+
+@router.post("/gestionEstudiantes/{id}/nuevo")
 async def crear_estudiante(request: Request):
     return RedirectResponse(url="/gestionEstudiantes", status_code=status.HTTP_303_SEE_OTHER)
 
@@ -199,17 +173,25 @@ async def crear_estudiante(request: Request):
 async def ver_estudiante(request: Request, id: int):
     return templates.TemplateResponse(request=request, name="gestionEstudiantesForm.html", context={"titulo": "Editar Estudiante", "accion": f"/gestionEstudiantes/{id}/editar"})
 
-@router.get("/gestionEstudiantes/{id}/editar", response_class=HTMLResponse)
-async def editar_estudiante_form(request: Request, id: int):
-    return templates.TemplateResponse(request=request, name="gestionEstudiantesForm.html", context={"titulo": "Editar Estudiante", "accion": f"/gestionEstudiantes/{id}/editar"})
+@router.get("/gestionEstudiantes/{id_estudiante}/editar", response_class=HTMLResponse)
+async def editar_estudiante_form(request: Request, conn: ConnectionDep, id_estudiante: int):
+    estudiante = await detalle_por_estudiantes(conn, id_estudiante)
+    return templates.TemplateResponse(request=request, name="gestionEstudianteForm_editar.html", context={"estudiante": estudiante})
 
-@router.post("/gestionEstudiantes/{id}/editar")
-async def actualizar_estudiante(request: Request, id: int):
-    return RedirectResponse(url="/gestionEstudiantes", status_code=status.HTTP_303_SEE_OTHER)
+@router.put("/gestionEstudiantes/{id_estudiante}/guardar")
+async def actualizar_estudiante(request: Request,conn: ConnectionDep, datos: Annotated[GuardarEstudiante, Form()], id_estudiante: int):
+    estudiante = await actualizarectudiante(conn, id_estudiante, datos.nombre, datos.email, datos.grado)
+    if estudiante:
+        return Response(status_code=303, headers={"HX-Redirect": "/gestionEstudiantes"})
 
-@router.post("/gestionEstudiantes/{id}/eliminar")
-async def eliminar_estudiante(request: Request, id: int):
-    return RedirectResponse(url="/gestionEstudiantes", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@router.delete("/gestionEstudiantes/{id_estudiante}/eliminar")
+async def eliminar_estudiante_ruta(request: Request, id_estudiante: int, conn: ConnectionDep):
+    estudiantes = await eliminar_estudiante(conn, id_estudiante)
+    if estudiantes:
+        return Response(status_code=200, headers={"HX-Redirect": "/gestionEstudiantes"})
+    
 
 
 # ============ GESTIÓN DE PROFESORES ============

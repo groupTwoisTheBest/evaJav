@@ -1,0 +1,45 @@
+{% extends "baseAdministrador.html" %}
+{% block title %}Nuevo Estudiante{% endblock %}
+{% block content %}
+
+<main class="wrap narrow">
+
+<div class="card">
+     <h2 class="center">Nuevo estudiante</h2>
+
+     <form action="/nuevo-usuario" method="POST">
+          
+          <label for="nombre">Crear un nombre</label>
+          <input class="input" type="text" id="nombre" name="nombre" placeholder="Ej. ejemplo@javiera.com" required autofocus>
+<label for="email">Crear un correo</label>
+          <input class="input" type="email" id="email" name="email" placeholder="Ej. ejemplo@javiera.com" required autofocus>
+          <label for="contrasenna">Crea una contraseña</label>
+          <input class="input" type="password" id="contrasenna" name="contrasenna" placeholder="Ej. javieram" required minlength="8" maxlength="100" autofocus>
+
+          <label for="grado">Grupo</label>
+               <select class="input" id="grado" name="grado" required>
+                    <option value="" disabled selected>Selecciona tu grupo</option>
+                    <option value="1">11</option>
+                    <option value="2">10</option>
+                    <option value="3">9</option>
+                    <option value="4">8</option>
+                    <option value="5">7</option>
+                    <option value="6">6</option>
+               </select>
+
+     <button class="btn">Guardar registro</button>
+{% if error %}
+<p style="color: red; font-weight: bold;">{{ error }}</p>
+{% endif %}
+{% if message %}
+<p style="color: green; font-weight: bold;">{{ message }}</p>
+{% endif %}
+</form>
+
+<p class="muted small center mt mb-0"><a href="/gestionEstudiantes">Volver</a>
+</p>
+</div>
+
+</main>
+
+{% endblock %}

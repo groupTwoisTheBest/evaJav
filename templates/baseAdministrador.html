@@ -8,6 +8,7 @@
     {% endblock %}
     <link rel="icon" href="{{ url_for('static', path='favicon.png') }}" type="image/x-icon">
     <title>{% block title %}EvaJav Admin{% endblock %}</title>
+    <script src="https://unpkg.com/htmx.org@4.0.0/dist/htmx.min.js"></script>
 </head>
 <body>
     {% block nav %}
@@ -19,7 +20,7 @@
             <a class="nav-links" href="/gestionGrados">Grados</a>
             <a class="nav-links" href="/centroEstadistico">Estadísticas</a>
         
-        <a href="/logout" class="btn auto sm ghost">Cerrar Sesión</a>
+        <a href="/" class="btn auto sm ghost">Cerrar Sesión</a>
     </nav>
     {% endblock %}
     <main class="wrap">

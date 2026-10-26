@@ -45,6 +45,30 @@ async def registrar_estudiante(conn, nombre: str, email: str, contrasenna: str, 
             """,
             estudiante_id, grado
         )
+
+async def registrar_maestro(conn, nombre: str, email: str, contrasenna: str, especialidad: str) -> None:
+    async with conn.transaction():
+        maestro_id = await conn.fetchval(
+            """
+            INSERT INTO maestros (nombre, contrasenna, email, especialidad)
+            VALUES ($1, $2, $3, $4)
+            RETURNING id
+            """,
+            nombre, hash_password(contrasenna), email, especialidad
+        )
+
+        await conn.execute(
+            """
+            INSERT INTO inscripciones (id_estudiante, id_asignacion)
+            SELECT $1, asignaciones.id
+            FROM asignaciones
+            JOIN periodos ON periodos.id = asignaciones.id_periodo
+            WHERE asignaciones.id_grado = $2
+                AND periodos.estado = 'abierto'
+            """,
+            maestro_id, especialidad
+        )
+         
 async def select_profesor(conn, email: str) -> list[dict]:
     rows = await conn.fetch("""
 SELECT DISTINCT maestros.nombre

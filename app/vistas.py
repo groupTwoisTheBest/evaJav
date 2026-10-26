@@ -1,7 +1,7 @@
 from typing import Annotated
 from app.dependencias import APIRouter, Depends, Request, Form, status, RedirectResponse, PlainTextResponse, HTMLResponse, Jinja2Templates, logger, ConnectionDep, CurrentUserDep
-from app.repositorio import inicio_sesion as autenticar_estudiante, registrar_estudiante, existe_email, inicio_sesion_admin, select_profesor, nombre_estudiante, registrar_calificacion,estadisticas_admin, detalle_por_grado,detalle_estudiantes,detalle_por_estudiantes,actualizarectudiante, eliminar_estudiante
-from app.esquemas import CrearEstudiante, GuardarEstudiante, LoginSchema, CalificacionSchema, SeleccionProfesorSchema
+from app.repositorio import inicio_sesion as autenticar_estudiante,registrar_maestro,  registrar_estudiante, existe_email, inicio_sesion_admin, select_profesor, nombre_estudiante, registrar_calificacion,estadisticas_admin, detalle_por_grado,detalle_estudiantes,detalle_por_estudiantes,actualizarectudiante, eliminar_estudiante
+from app.esquemas import CrearEstudiante, CrearMaestro, GuardarEstudiante, LoginSchema, CalificacionSchema, SeleccionProfesorSchema
 from app.seguridad import create_token  
 from fastapi.responses import Response
 router = APIRouter()
@@ -79,6 +79,17 @@ async def nuevo_usuario(
     if await existe_email(conn, datos.email):
         return templates.TemplateResponse(request=request, name="registrarse.html", context={"error": "El correo ya está registrado."})
     await registrar_estudiante(conn, datos.nombre, datos.email, datos.contrasenna, datos.grado)
+    return templates.TemplateResponse(request=request, name="registrarse.html", context={"message": "Registrado exitosamente."})
+
+@router.post("/nuevo-maestro")
+async def nuevo_maestro(
+    request: Request,
+    conn: ConnectionDep,
+    datos: Annotated[CrearMaestro, Form()],
+):
+    if await existe_email(conn, datos.email):
+        return templates.TemplateResponse(request=request, name="registrarse.html", context={"error": "El correo ya está registrado."})
+    await registrar_maestro(conn, datos.nombre, datos.email, datos.contrasenna, datos.especialidad)
     return templates.TemplateResponse(request=request, name="registrarse.html", context={"message": "Registrado exitosamente."})
 
 

@@ -8,6 +8,12 @@ class CrearEstudiante(BaseModel):
     contrasenna: Annotated[str, Field(min_length=8, max_length=100)]
     grado: int
 
+class CrearMaestro(BaseModel):
+    nombre: Annotated[str, Field(min_length=1, max_length=100)]
+    Grado: int
+    contrasenna: Annotated[str, Field(min_length=8, max_length=100)]
+    especialidad: Annotated[str, Field(min_length=1, max_length=100)] 
+
 
 class GuardarEstudiante(BaseModel):
     nombre: Annotated[str, Field(min_length=1, max_length=100)]

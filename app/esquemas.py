@@ -1,3 +1,4 @@
+from pickle import INT
 from typing import Annotated
 from pydantic import BaseModel, Field, EmailStr
 
@@ -29,10 +30,13 @@ class LoginSchema(BaseModel):
 
 class CalificacionSchema(BaseModel):
     maestro: Annotated[str, Field(min_length=1)]
-    explicationsTopics: Annotated[str, Field(min_length=1)]
-    actitudinal: Annotated[str, Field(min_length=1)]
-    classActivity: Annotated[str, Field(min_length=1)]
+    explication: Annotated[int, Field()]
+    actitudinal: Annotated[int, Field()]
+    class_activity: Annotated[int, Field()]
+    id_materia: Annotated[int, Field()]
 
 
 class SeleccionProfesorSchema(BaseModel):
+    
     maestro: Annotated[str, Field(min_length=1)]
+    id_materia: Annotated[int, Field()]

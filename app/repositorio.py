@@ -1,5 +1,21 @@
+# =============================================================================
+# repositorio.py — Acceso a datos y operaciones CRUD con PostgreSQL
+# =============================================================================
+# Este archivo contiene todas las consultas directas a la base de datos.
+# Cada función recibe una conexión asyncpg (ConnectionDep) y opera de forma asíncrona.
+# Depende de: app/seguridad.py → hash_password() para encriptar contraseñas,
+#             verify_password() para validar credenciales en el login.
+# Es usada por: app/vistas.py → los endpoints HTTP llaman aquí para persistir/leer datos.
+# =============================================================================
+
+from logging import exception
+
 from app.seguridad import hash_password, verify_password
 
+
+# ── Autenticación ──────────────────────────────────────────────────────────────
+# Funciones que verifican credenciales de estudiantes y administradores.
+# Comparan la contraseña en texto plano contra el hash almacenado usando Argon2id.
 
 async def inicio_sesion(conn, email: str, contrasenna: str) -> dict | None:
     row = await conn.fetchrow(
@@ -19,9 +35,17 @@ async def inicio_sesion_admin(conn, email: str, contrasenna: str) -> dict | None
         return dict(row)
     return None
 
+# ── Validación de unicidad ─────────────────────────────────────────────────────
+# Verifica si un email ya existe en la base de datos para evitar duplicados.
+
 async def existe_email(conn, email: str) -> bool:
     row = await conn.fetchrow("SELECT 1 FROM estudiantes WHERE email = $1", email)
     return row is not None
+
+# ── Registro de estudiantes ───────────────────────────────────────────────────
+# Crea un nuevo estudiante en la tabla correspondiente.
+# La contraseña se hashea con Argon2id antes de almacenarse.
+# Usa una transacción para asegurar atomicidad en la inserción.
 
 async def registrar_estudiante(conn, nombre: str, email: str, contrasenna: str, grado: int) -> None:
     async with conn.transaction():
@@ -46,6 +70,11 @@ async def registrar_estudiante(conn, nombre: str, email: str, contrasenna: str, 
             estudiante_id, grado
         )
 
+# ── Registro de profesores ────────────────────────────────────────────────────
+# Crea un nuevo maestro y lo inscribe automáticamente en todas las asignaciones
+# correspondientes a su especialidad durante periodos con estado 'abierto'.
+# Usa transacción para asegurar que el maestro y sus inscripciones se creen juntos.
+
 async def registrar_maestro(conn, nombre: str, email: str, contrasenna: str, especialidad: str) -> None:
     async with conn.transaction():
         maestro_id = await conn.fetchval(
@@ -68,13 +97,18 @@ async def registrar_maestro(conn, nombre: str, email: str, contrasenna: str, esp
             """,
             maestro_id, especialidad
         )
-         
+
+# ── Consulta de profesores asignados ──────────────────────────────────────────
+# Devuelve la lista de profesores que un estudiante puede evaluar.
+# Filtra solo los profesores cuyas asignaciones aún no han sido votadas por el estudiante.
+
 async def select_profesor(conn, email: str) -> list[dict]:
     rows = await conn.fetch("""
-SELECT DISTINCT maestros.nombre
+SELECT DISTINCT maestros.nombre, m.nombre_materia, asignaciones.id_materia
 FROM asignaciones
 JOIN maestros ON maestros.id = asignaciones.id_profesor
 JOIN estudiantes ON estudiantes.id_grado = asignaciones.id_grado
+JOIN materias m ON m.id = asignaciones.id_materia
 LEFT JOIN inscripciones
     ON inscripciones.id_asignacion = asignaciones.id
     AND inscripciones.id_estudiante = estudiantes.id
@@ -82,6 +116,10 @@ WHERE estudiantes.email = $1
     AND (inscripciones.ya_voto IS NULL OR inscripciones.ya_voto = false)
     """, email)
     return [dict(row) for row in rows] if rows else []
+
+# ── Consulta de nombre de estudiante ──────────────────────────────────────────
+# Obtiene el nombre del estudiante a partir de su email.
+# Se usa para mostrar el nombre del usuario en las vistas.
 
 async def nombre_estudiante(conn, email: str) -> dict | None:
     row = await conn.fetchrow(
@@ -91,11 +129,17 @@ async def nombre_estudiante(conn, email: str) -> dict | None:
     return dict(row) if row else None
 
 
+# ── Registro de calificaciones ────────────────────────────────────────────────
+# Permite a un estudiante enviar su evaluación de un profesor.
+# Convierte las etiquetas ("Malo", "Regular", "Bien", "Excelente") a valores numéricos 1-4.
+# Marca la inscripción como "ya_voto = true" para impedir votaciones duplicadas.
+# Lanza ValueError si no encuentra asignación activa (profesor + grado + periodo abierto).
+
 async def registrar_calificacion(
     conn, email: str, profesor: str,
-    explication: str, actitudinal: str, class_activity: str
+    explication: int, actitudinal: int, class_activity: int, id_materia: int
 ) -> None:
-    mapa = {"Malo": 1, "Regular": 2, "Bien": 3, "Excelente": 4}
+    
     profesor = profesor.strip()
 
     async with conn.transaction():
@@ -106,9 +150,9 @@ async def registrar_calificacion(
             JOIN estudiantes e ON e.id_grado = a.id_grado
             JOIN periodos p ON p.id = a.id_periodo
             JOIN inscripciones i ON i.id_asignacion = a.id AND i.id_estudiante = e.id
-            WHERE e.email = $1 AND m.nombre = $2
+            WHERE e.email = $1 AND m.nombre = $2 AND a.id_materia = $3
                 AND p.estado = 'abierto' AND i.ya_voto = false
-        """, email, profesor)
+        """, email, profesor, id_materia)
 
         if not asignaciones:
             raise ValueError("No se encontró la asignación para esta evaluación")
@@ -117,7 +161,7 @@ async def registrar_calificacion(
             await conn.execute("""
                 INSERT INTO evaluaciones (id_asignacion, actitudinal, actividades, metodologia)
                 VALUES ($1, $2, $3, $4)
-            """, a["id"], mapa[actitudinal], mapa[class_activity], mapa[explication])
+            """, a["id"], actitudinal,class_activity, explication)
 
         await conn.execute("""
             UPDATE inscripciones SET ya_voto = true
@@ -126,8 +170,15 @@ async def registrar_calificacion(
                 SELECT a.id FROM asignaciones a
                 JOIN maestros m ON m.id = a.id_profesor
                 WHERE m.nombre = $2
+                AND a.id_materia = $3
             )
-        """, email, profesor)
+        """, email, profesor, id_materia)
+
+# ── Estadísticas admin: mejor y peor maestro ──────────────────────────────────
+# Devuelven los 5 profesores con las calificaciones más altas y más bajas.
+# El promedio se calcula como el promedio de los 3 criterios: actitudinal,
+# actividades y metodología (escala 1-4 por criterio).
+# Se agrupa por maestro (GROUP BY m.id) para evitar duplicados por múltiples asignaciones.
 
 async def mejor_maestro_admin(conn) -> dict | None:
     rows = await conn.fetch(
@@ -156,6 +207,13 @@ async def peor_maestro_admin(conn) -> list | None:
         """
     )
     return [dict(row) for row in rows] if rows else None
+
+# ── Estadísticas admin: promedio general por grado (6° a 11°) ─────────────────
+# Cada función calcula el promedio acumulado de todas las evaluaciones de un grado.
+# La escala de calificación es: {"Malo": 1, "Regular": 2, "Bien": 3, "Excelente": 4}.
+# El promedio se calcula como (actitudinal + actividades + metodología) / 3 por cada evaluación,
+# y luego se promedia entre todas las evaluaciones del grado.
+# Devuelven el promedio como string (formato "X.XX") o None si no hay datos.
 
 async def promedio_11_admin(conn) -> str | None:
     row = await conn.fetchrow(
@@ -259,6 +317,11 @@ FROM (
     )
     return str(row[0]) if row else None
 
+# ── Estadísticas admin: conteos generales ──────────────────────────────────────
+# Devuelven el número total de registros en cada tabla principal.
+# Se usan en el dashboard admin para mostrar métricas de alto nivel.
+# n_inscripciones_admin cuenta solo las inscripciones ya votadas (ya_voto = TRUE).
+
 async def n_estudiantes_admin (conn) -> int | None:
     row = await conn.fetchrow(
         "SELECT COUNT(*) FROM estudiantes"
@@ -283,6 +346,11 @@ async def n_grados_admin (conn) -> int | None:
     )
     return int(row[0]) if row else None
 
+
+# ── Estadísticas admin: conteos de estudiantes por grado ───────────────────────
+# Cada función cuenta los estudiantes matriculados en un grado específico.
+# id_grado es un número: 1 = 6°, 2 = 7°, 3 = 8°, 4 = 9°, 5 = 10°, 6 = 11°.
+# Se usan en estadisticas_admin para desglosar el total por grado.
 
 async def n_e_admin_1 (conn) -> int | None:
     row = await conn.fetchrow(
@@ -320,9 +388,17 @@ async def n_e_admin_6 (conn) -> int | None:
     )
     return int(row[0]) if row else None
 
+# ── Estadísticas admin: consolidada ────────────────────────────────────────────
+# Compila todas las métricas del dashboard admin en un solo diccionario.
+# Llama a todas las funciones anteriores en un solo punto para optimizar el acceso.
+# Las claves del diccionario se usan directamente en las plantillas Jinja2:
+#   nde = número de estudiantes, ndm = número de maestros, ndi = inscripciones, ndg = grados
+#   mma = mejores maestros, pma = peores maestros
+#   p6 a p11 = promedios por grado, n_e_1 a n_e_6 = estudiantes por grado
+
 async def estadisticas_admin(conn):
     return {
-    "nde": await n_estudiantes_admin(conn),     
+    "nde": await n_estudiantes_admin(conn),
     "ndm": await n_maestros_admin(conn),
     "ndi": await n_inscripciones_admin(conn),
     "ndg": await n_grados_admin(conn),
@@ -342,19 +418,32 @@ async def estadisticas_admin(conn):
     "n_e_6": await n_e_admin_6(conn)
     }
 
+# ── Consultas de detalle: detalle_por_grado ────────────────────────────────────
+# Consulta compleja con CTEs (Common Table Expressions) que devuelve un resumen por grado.
+# Muestra: número de profesores, estudiantes, promedio general, mejor profesor y estado del periodo.
+# Se usa en la vista de detalle del dashboard admin para mostrar información por grado.
+#
+# CTEs utilizados:
+#   estudiantes_por_grado:   Cuenta estudiantes matriculados por grado
+#   promedios_asignacion:    Calcula promedio por cada evaluación (3 criterios)
+#   promedio_por_profesor:   Agrupa promedios por profesor dentro de su grado
+#   mejor_profesor_grado:    Usa ROW_NUMBER para seleccionar al profesor con mayor promedio
+#   promedio_general_grado:  Promedio acumulado de todas las evaluaciones del grado
+#   estado_periodo:          Estado del periodo (abierto/cerrado) por grado (más reciente)
+
 async def detalle_por_grado (conn) -> dict | None:
     rows = await conn.fetch("""
         WITH estudiantes_por_grado AS (
     -- Cuenta los estudiantes matriculados en cada grado
-    SELECT 
-        id_grado, 
+    SELECT
+        id_grado,
         COUNT(id) AS total_estudiantes
     FROM estudiantes
     GROUP BY id_grado
 ),
 promedios_asignacion AS (
     -- Obtiene el promedio de cada asignación (promedio de los 3 criterios)
-    SELECT 
+    SELECT
         a.id AS id_asignacion,
         a.id_grado,
         a.id_profesor,
@@ -366,7 +455,7 @@ promedios_asignacion AS (
 ),
 promedio_por_profesor AS (
     -- Agrupa el promedio general por cada profesor dentro de su grado
-    SELECT 
+    SELECT
         id_grado,
         id_profesor,
         nombre_profesor,
@@ -376,7 +465,7 @@ promedio_por_profesor AS (
 ),
 mejor_profesor_grado AS (
     -- Selecciona al profesor con la calificación más alta por grado
-    SELECT 
+    SELECT
         id_grado,
         nombre_profesor,
         ROW_NUMBER() OVER (PARTITION BY id_grado ORDER BY promedio_profesor DESC NULLS LAST) AS rn
@@ -384,7 +473,7 @@ mejor_profesor_grado AS (
 ),
 promedio_general_grado AS (
     -- Calcula el promedio general acumulado de todas las evaluaciones del grado
-    SELECT 
+    SELECT
         id_grado,
         AVG(promedio_asignacion) AS promedio_general
     FROM promedios_asignacion
@@ -399,7 +488,7 @@ estado_periodo AS (
     JOIN periodos p ON p.id = a.id_periodo
     ORDER BY a.id_grado, p.id DESC
 )
-SELECT 
+SELECT
     g.nombre_grado AS Grado,
     COUNT(DISTINCT a.id_profesor) AS Numero_de_Profesores,
     COALESCE(epg.total_estudiantes, 0) AS Estudiantes,
@@ -412,21 +501,26 @@ LEFT JOIN asignaciones a ON a.id_grado = g.id_grado
 LEFT JOIN promedio_general_grado pgg ON pgg.id_grado = g.id_grado
 LEFT JOIN mejor_profesor_grado mpg ON mpg.id_grado = g.id_grado AND mpg.rn = 1
 LEFT JOIN estado_periodo ep ON ep.id_grado = g.id_grado
-GROUP BY 
-    g.id_grado, 
-    g.nombre_grado, 
-    epg.total_estudiantes, 
-    pgg.promedio_general, 
-    mpg.nombre_profesor, 
+GROUP BY
+    g.id_grado,
+    g.nombre_grado,
+    epg.total_estudiantes,
+    pgg.promedio_general,
+    mpg.nombre_profesor,
     ep.estado
 ORDER BY g.id_grado ASC;
 """
     )
     return [dict(row) for row in rows] if rows else None     
 
+# ── Consultas de detalle: listado de estudiantes ───────────────────────────────
+# Devuelve la lista completa de estudiantes con su nombre, email y grado.
+# Se usa para mostrar la tabla de estudiantes en la vista admin de gestión.
+# JOIN con grados para obtener el nombre del grado (ej: "6°", "7°") en lugar del ID.
+
 async def detalle_estudiantes(conn) -> list[dict]:
     rows = await conn.fetch("""
-        SELECT 
+        SELECT
             e.id AS id_estudiante,
             e.nombre AS nombre_estudiante,
             e.email,
@@ -434,7 +528,12 @@ async def detalle_estudiantes(conn) -> list[dict]:
         FROM estudiantes e
         JOIN grados g ON e.id_grado = g.id_grado;
     """)
-    return [dict(row) for row in rows] if rows else None   
+    return [dict(row) for row in rows] if rows else None
+
+# ── Actualización de estudiante ───────────────────────────────────────────────
+# Modifica los datos de un estudiante existente: nombre, email y grado.
+# Nota: el nombre de la función tiene un typo ("actualizarectudiante" en vez de "actualizarestudiante").
+# Usa RETURNING * para devolver el registro actualizado.
 
 async def actualizarectudiante(conn, id_estudiante: int, nombre: str, email: str, grado: int) -> dict | None:
     row =await conn.fetchrow(
@@ -448,9 +547,13 @@ async def actualizarectudiante(conn, id_estudiante: int, nombre: str, email: str
         )
     return dict(row) if row else None
 
+# ── Consultas de detalle: estudiante individual ───────────────────────────────
+# Devuelve los datos de un único estudiante filtrado por su ID.
+# Se usa para mostrar el formulario de edición con los datos actuales.
+
 async def detalle_por_estudiantes(conn, id_estudiante: int) -> dict | None:
     row = await conn.fetchrow("""
-        SELECT 
+        SELECT
             e.id AS id_estudiante,
             e.nombre AS nombre_estudiante,
             e.email,
@@ -459,7 +562,13 @@ async def detalle_por_estudiantes(conn, id_estudiante: int) -> dict | None:
         JOIN grados g ON e.id_grado = g.id_grado
         WHERE e.id = $1
     """, id_estudiante)
-    return dict(row) if row else None   
+    return dict(row) if row else None
+
+# ── Eliminación de estudiante ────────────────────────────────────────────────
+# Elimina un estudiante y todas sus inscripciones relacionadas.
+# Primero borra las inscripciones (para respetar restricciones de clave foránea),
+# luego borra el estudiante de la tabla correspondiente.
+# Retorna True si se eliminó exactamente 1 estudiante (verifica el resultado del DELETE).
 
 async def eliminar_estudiante(conn, id_estudiante: int) -> bool:
     result = await conn.execute(

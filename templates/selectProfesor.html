@@ -31,16 +31,28 @@
 
 <div class="grid">
 
+
     <div class="card center">
         <h2 for="maestro" >¿A quién quieres evaluar?</h2>
+        
             <select class="input" id="maestro" name="maestro" required>
                 <option value="">Elige a un maestro</option>
+                
                 {% if profesores %}
                     {% for profesor in profesores %}
-                        <option value="{{profesor.nombre}}">{{profesor.nombre}}</option>
+                        <option value="{{profesor.nombre}}|{{profesor.id_materia}}">{{profesor.nombre}}, <span class="badge"> MATERIA </span> {{profesor.nombre_materia}}</option>
                     {% endfor %}
                 {% endif %}
             </select>
+            <input type="hidden" name="id_materia" value="" id="id_materia">
+                <script>
+    document.getElementById("Selectormestro").addEventListener("submit", function(e){
+        const partes = document.getElementById("maestro").value.split("|");
+        if (partes.length === 2){
+            document.getElementById("id_materia").value = partes[1].trim();
+        }
+    });
+    </script>
         <button class="btn mt" type="submit" >seguir</button>
     </div>
 

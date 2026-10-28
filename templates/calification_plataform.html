@@ -14,21 +14,22 @@
 
 <main class="wrap ">
     <form id="calification" action="/calificaElProfesor" method="post">
-        <input class="input" type="hidden" name="maestro" value="{{ maestro }}">
-        <h2>Evaluando a: {{ maestro }}</h2>
+        <input type="hidden" name="maestro" value="{{ maestro }}">
+        <input type="hidden" name="id_materia" value="{{ id_materia }}">
+        <h2>Evaluando a: {{ maestro.split("|")[0] }}</h2>
 
         {% if error %}
         <p class="error">{{ error }}</p>
         {% endif %}
 
     <div class="card center">
-        <label for="explicationsTopics">Explicación del tema</label>
-            <select class="input" id="explicationsTopics" name="explicationsTopics" required>
+        <label for="explication">Explicación del tema</label>
+            <select class="input" id="explication" name="explication" required>
                 <option value="" disabled selected>Nota</option>
-                <option value="Malo">Malo</option>
-                <option value="Regular">Regular</option>
-                <option value="Bien" >Bien</option>
-                <option value="Excelente">Excelente</option>
+                <option value="1">Malo</option>
+                <option value="2">Regular</option>
+                <option value="3" >Bien</option>
+                <option value="4">Excelente</option>
             </select>
 
 
@@ -38,22 +39,22 @@
 
             <select class="input" id="actitudinal" name="actitudinal" required>
                 <option value="" disabled selected>Nota</option>
-                <option value="Malo">Malo</option>
-                <option value="Regular">Regular</option>
-                <option value="Bien">Bien</option>
-                <option value="Excelente">Excelente</option>
+                <option value="1">Malo</option>
+                <option value="2">Regular</option>
+                <option value="3">Bien</option>
+                <option value="4">Excelente</option>
             </select>
 
 
         <label for="classActivity" class="track">Actividades de clase</label>
 
 
-            <select class="input" id="classActivity" name="classActivity" required>
+            <select class="input" id="class_activity" name="class_activity" required>
                 <option value="" disabled selected>Nota</option>
-                <option value="Malo">Malo</option>
-                <option value="Regular">Regular</option>
-                <option value="Bien">Bien</option>
-                <option value="Excelente">Excelente</option>
+                <option value="1">Malo</option>
+                <option value="2">Regular</option>
+                <option value="3">Bien</option>
+                <option value="4">Excelente</option>
             </select>
             <button class="btn" type="submit">Enviar</button>
         </div>

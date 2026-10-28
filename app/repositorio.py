@@ -688,3 +688,25 @@ async def eliminar_grado(conn, id_grado: int) -> bool:
         WHERE id_grado = $1;
         """,id_grado)
     return result == "DELETE 1"
+
+
+# ── Catálogos para nuevo profesor ─────────────────────────────────────────────
+# Devuelven las listas desplegables que el formulario de "Nuevo profesor" necesita:
+# materias (id, nombre_materia), periodos (id, nombre, estado).
+# Para los grados se reutiliza listar_grados() de arriba ({id_grado, nombre_grado, ...}).
+
+async def listar_materias(conn) -> list[dict]:
+    rows = await conn.fetch("""
+        SELECT id, nombre_materia
+        FROM materias
+        ORDER BY nombre_materia;
+    """)
+    return [dict(row) for row in rows] if rows else []
+
+async def listar_periodos(conn) -> list[dict]:
+    rows = await conn.fetch("""
+        SELECT id, nombre, estado
+        FROM periodos
+        ORDER BY id DESC;
+    """)
+    return [dict(row) for row in rows] if rows else []

@@ -37,9 +37,10 @@ from app.repositorio import (
     detalle_estudiantes, detalle_por_estudiantes, actualizarectudiante,
     eliminar_estudiante, obtener_todos_los_profesores,
     eliminar_grado as eliminar_grado_bd, listar_grados,
+    detalle_por_profesor, actualizar_profesor,
 )
 from app.esquemas import (
-    CrearEstudiante, CrearMaestro, GuardarEstudiante,
+    CrearEstudiante, CrearMaestro, GuardarEstudiante, GuardarProfesor,
     LoginSchema, CalificacionSchema, SeleccionProfesorSchema,
 )
 from app.seguridad import create_token
@@ -432,6 +433,16 @@ async def crear_profesor(request: Request):
     """
     return RedirectResponse(url="/gestionProfesores", status_code=status.HTTP_303_SEE_OTHER)
 
+@router.get("/gestionProfesores/cancelar", response_class=HTMLResponse)
+async def cancelar_edicion_profesor(request: Request):
+    """Cancela la edición de un profesor y redirige a la lista principal.
+
+    Usado por HTMX para cancelar la edición inline y volver al listado.
+    Debe declararse ANTES de GET /gestionProfesores/{id} para que {id: int}
+    no capture "cancelar" y devuelva 422.
+    """
+    return Response(status_code=303, headers={"HX-Redirect": "/gestionProfesores"})
+
 @router.get("/gestionProfesores/{id}", response_class=HTMLResponse)
 async def ver_profesor(request: Request, id: int):
     """Muestra la página de información de un profesor por ID.
@@ -442,21 +453,29 @@ async def ver_profesor(request: Request, id: int):
     return templates.TemplateResponse(request=request, name="gestionProfesoresInformacion.html", context={})
 
 @router.get("/gestionProfesores/{id}/editar", response_class=HTMLResponse)
-async def editar_profesor_form(request: Request, id: int):
-    """Muestra el formulario de edición de un profesor por ID.
+async def editar_profesor_form(request: Request, conn: ConnectionDep, id: int):
+    """Muestra el formulario de edición inline (htmx) de un profesor por ID.
 
-    Stub: renderiza `gestionProfesoresForm.html` con título y acción predefinidos,
-    pero no carga los datos reales del profesor.
+    Carga los datos reales del profesor desde la BD y renderiza el parcial
+    `gestionProfesoresForm_editar.html` (una <tr> editable que reemplaza la
+    fila de la tabla vía hx-swap="outerHTML"). Si el ID no existe, responde
+    con HX-Redirect al listado para no dejar una fila rota.
     """
-    return templates.TemplateResponse(request=request, name="gestionProfesoresForm.html", context={"titulo": "Editar Profesor", "accion": f"/gestionProfesores/{id}/editar"})
+    profesor = await detalle_por_profesor(conn, id)
+    if profesor is None:
+        return Response(status_code=200, headers={"HX-Redirect": "/gestionProfesores"})
+    return templates.TemplateResponse(request=request, name="gestionProfesoresForm_editar.html", context={"profesor": profesor})
 
-@router.post("/gestionProfesores/{id}/editar")
-async def actualizar_profesor(request: Request, id: int):
-    """Actualiza los datos de un profesor existente.
+@router.put("/gestionProfesores/{id}/guardar")
+async def guardar_profesor(request: Request, conn: ConnectionDep, datos: Annotated[GuardarProfesor, Form()], id: int):
+    """Actualiza el nombre de un profesor existente (edición inline htmx).
 
-    Stub: no extrae ni procesa datos del request. Simplemente redirige al listado.
+    Recibe los datos validados por el schema GuardarProfesor, actualiza el
+    nombre en la BD y responde con HX-Redirect al listado (patrón de
+    actualizar_estudiante).
     """
-    return RedirectResponse(url="/gestionProfesores", status_code=status.HTTP_303_SEE_OTHER)
+    await actualizar_profesor(conn, id, datos.nombre)
+    return Response(status_code=303, headers={"HX-Redirect": "/gestionProfesores"})
 
 @router.get("/gestionProfesores/{id}/editar-grado", response_class=HTMLResponse)
 async def editar_grado_profesor_form(request: Request, id: int):

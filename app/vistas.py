@@ -35,7 +35,8 @@ from app.repositorio import (
     inicio_sesion_admin, select_profesor, nombre_estudiante,
     registrar_calificacion, estadisticas_admin, detalle_por_grado,
     detalle_estudiantes, detalle_por_estudiantes, actualizarectudiante,
-    eliminar_estudiante,
+    eliminar_estudiante, obtener_todos_los_profesores,
+    eliminar_grado as eliminar_grado_bd, listar_grados,
 )
 from app.esquemas import (
     CrearEstudiante, CrearMaestro, GuardarEstudiante,
@@ -271,13 +272,15 @@ async def read_gestion_grados(request: Request, conn: ConnectionDep):
     """Muestra la página de gestión de grados con las métricas generales.
     
     1. Obtiene estadísticas generales con `estadisticas_admin()`.
-    2. Renderiza `gestionGrados.html` con esas métricas.
+    2. Obtiene la lista real de grados con `listar_grados()`.
+    3. Renderiza `gestionGrados.html` con esas métricas y el listado.
     
     Nota: Este endpoint tiene una versión duplicada sin contexto en la sección
     de CRUD de grados (línea 341). Esta es la versión completa que recibe
     ConnectionDep y pasa estadísticas al template.
     """
     contexto = await estadisticas_admin(conn)
+    contexto["grados"] = await listar_grados(conn)
     return templates.TemplateResponse(
         request=request, name="gestionGrados.html", context=contexto
     )
@@ -292,14 +295,24 @@ async def read_gestion_grados_nuevo(request: Request):
 
 
 @router.get("/gestionProfesores", response_class=HTMLResponse)
-async def read_gestion_profesores(request: Request):
-    """Muestra la página de gestión de profesores.
+async def read_gestion_profesores(request: Request, conn: ConnectionDep):
+    """Muestra la página de gestión de profesores con datos reales de la BD.
     
-    Actualmente es un stub: solo renderiza el template sin datos de la BD.
+    Obtiene todos los profesores, su grado asignado, promedio de evaluación
+    y estado (Activo/Alerta) desde PostgreSQL.
     """
-    return templates.TemplateResponse(
-        request=request, name="gestionProfesores.html", context={}
-    )
+    try:
+        teachers = await obtener_todos_los_profesores(conn)
+        logger.info(f"gestionProfesores cargado con {len(teachers)} profesores")
+        return templates.TemplateResponse(
+            request=request, name="gestionProfesores.html", context={"teachers": teachers}
+        )
+    except Exception as e:
+        logger.error(f"Error en gestionProfesores: {type(e).__name__}: {e}")
+        return HTMLResponse(
+            content="Error al cargar los profesores. Intente de nuevo.",
+            status_code=500,
+        )
 
 
 @router.get("/gestionProfesores/nuevo", response_class=HTMLResponse)
@@ -478,15 +491,7 @@ async def eliminar_profesor(request: Request, id: int):
 # Nota: Existe una segunda función `read_gestion_grados()` en la línea 261 con
 # lógica real (estadísticas + ConnectionDep); esta es una versión duplicada sin contexto.
 
-@router.get("/gestionGrados", response_class=HTMLResponse)
-async def read_gestion_grados(request: Request):
-    """Muestra la página de gestión de grados (versión stub sin datos).
 
-    Nota: Esta función es un duplicado sin lógica real. Existe otra con el mismo
-    nombre en la línea 261 que sí carga estadísticas y recibe ConnectionDep.
-    Renderiza `gestionGrados.html` con contexto vacío.
-    """
-    return templates.TemplateResponse(request=request, name="gestionGrados.html", context={})
 
 @router.get("/gestionGrados/nuevo", response_class=HTMLResponse)
 async def nuevo_grado_form(request: Request):
@@ -521,12 +526,16 @@ async def actualizar_grado(request: Request, id: int):
     """
     return RedirectResponse(url="/gestionGrados", status_code=status.HTTP_303_SEE_OTHER)
 
-@router.post("/gestionGrados/{id}/eliminar")
-async def eliminar_grado(request: Request, id: int):
-    """Elimina un grado por ID.
+@router.delete("/gestionGrados/{id}/eliminar")
+async def eliminar_grado(request: Request, id: int, conn: ConnectionDep):
+    """Elimina un grado por ID, solo si no tiene estudiantes ni asignaciones.
 
-    Stub: no realiza ninguna operación real. Simplemente redirige al listado.
+    Si el grado tiene estudiantes o asignaciones asociadas, NO se elimina
+    y simplemente se redirige al listado (el grado sigue apareciendo).
     """
+    eliminado = await eliminar_grado_bd(conn, id)
+    if eliminado:
+        return Response(status_code=200, headers={"HX-Redirect": "/gestionGrados"})
     return RedirectResponse(url="/gestionGrados", status_code=status.HTTP_303_SEE_OTHER)
 
 

@@ -40,7 +40,7 @@
                 
                 {% if profesores %}
                     {% for profesor in profesores %}
-                        <option value="{{profesor.nombre}}|{{profesor.id_materia}}">{{profesor.nombre}}, <span class="badge"> MATERIA </span> {{profesor.nombre_materia}}</option>
+                        <option value="{{profesor.nombre}}|{{profesor.id_materia}}">{{profesor.nombre}}.................................................... <span class="badge"> MATERIA: </span> {{profesor.nombre_materia}}</option>
                     {% endfor %}
                 {% endif %}
             </select>

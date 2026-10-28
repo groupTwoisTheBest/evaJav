@@ -13,26 +13,6 @@
     </div>
 </div>
 
-<!-- Filtros -->
-<div class="card">
-    <div class="form-inline">
-        <div>
-            <input class="input" type="text" placeholder="Buscar por nombre...">
-        </div>
-        <div>
-            <select class="input">
-                <option value="">Todos los grados</option>
-                <option value="1">11°</option>
-                <option value="2">10°</option>
-                <option value="3">9°</option>
-                <option value="4">8°</option>
-                <option value="5">7°</option>
-                <option value="6">6°</option>
-            </select>
-        </div>
-    </div>
-</div>
-
 <!-- Tabla de profesores -->
 <div class="card">
     <div class="tabla-scroll">
@@ -47,66 +27,27 @@
                 </tr>
             </thead>
             <tbody>
+                {% for teacher in teachers %}
                 <tr>
-                    <td>María García</td>
-                    <td><span class="badge">3° Básico</span></td>
-                    <td><span class="badge ok">4.8</span></td>
-                    <td><span class="badge ok vivo">Activo</span></td>
+                    <td>{{ teacher.nombre }}</td>
+                    <td><span class="badge">{{ teacher.grados_asignados }}</span></td>
+                    <td><span class="badge {% if teacher.promedio_eval >= 3.5 %}ok{% else %}off{% endif %}">{{ teacher.promedio_eval }}</span></td>
+                    <td><span class="badge {% if teacher.estado == 'Activo' %}ok vivo{% else %}off{% endif %}">{{ teacher.estado }}</span></td>
                     <td>
                         <div class="row-actions">
-                            <a href="/gestionProfesores/1/editar" class="btn sm ghost">Editar</a>
+                            <a href="/gestionProfesores/{{ teacher.id }}/editar" class="btn sm ghost">Editar</a>
                             <button class="btn sm danger">Eliminar</button>
                         </div>
                     </td>
                 </tr>
+                {% endfor %}
+                {% if not teachers %}
                 <tr>
-                    <td>Carlos López</td>
-                    <td><span class="badge">1° Básico</span></td>
-                    <td><span class="badge ok">4.6</span></td>
-                    <td><span class="badge ok vivo">Activo</span></td>
-                    <td>
-                        <div class="row-actions">
-                            <a href="/gestionProfesores/2/editar" class="btn sm ghost">Editar</a>
-                            <button class="btn sm danger">Eliminar</button>
-                        </div>
+                    <td colspan="5" style="text-align: center; padding: 2rem; color: #888;">
+                        No hay profesores registrados.
                     </td>
                 </tr>
-                <tr>
-                    <td>Roberto Díaz</td>
-                    <td><span class="badge">5° Básico</span></td>
-                    <td><span class="badge off">2.8</span></td>
-                    <td><span class="badge off">Alerta</span></td>
-                    <td>
-                        <div class="row-actions">
-                            <a href="/gestionProfesores/3/editar" class="btn sm ghost">Editar</a>
-                            <button class="btn sm danger">Eliminar</button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Ana Martínez</td>
-                    <td><span class="badge">2° Básico</span></td>
-                    <td><span class="badge ok">4.4</span></td>
-                    <td><span class="badge ok vivo">Activo</span></td>
-                    <td>
-                        <div class="row-actions">
-                            <a href="/gestionProfesores/4/editar" class="btn sm ghost">Editar</a>
-                            <button class="btn sm danger">Eliminar</button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Pedro Sánchez</td>
-                    <td><span class="badge">4° Básico</span></td>
-                    <td><span class="badge">4.2</span></td>
-                    <td><span class="badge ok vivo">Activo</span></td>
-                    <td>
-                        <div class="row-actions">
-                            <a href="/gestionProfesores/5/editar" class="btn sm ghost">Editar</a>
-                            <button class="btn sm danger">Eliminar</button>
-                        </div>
-                    </td>
-                </tr>
+                {% endif %}
             </tbody>
         </table>
     </div>

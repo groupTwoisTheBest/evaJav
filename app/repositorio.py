@@ -547,6 +547,58 @@ async def actualizarectudiante(conn, id_estudiante: int, nombre: str, email: str
         )
     return dict(row) if row else None
 
+# ── Consulta de todos los profesores (panel admin) ────────────────────────────
+# Devuelve todos los profesores con su grado asignado y promedio de evaluación.
+# Se usa en el panel de administración para gestionar la lista de profesores.
+# Retorna lista de dicts: {id, nombre, grado_asignado, promedio_eval, estado}
+
+async def obtener_todos_los_profesores(conn) -> list[dict]:
+    rows = await conn.fetch("""
+SELECT
+    m.id,
+    m.nombre,
+    COALESCE(
+        STRING_AGG(DISTINCT g.nombre_grado, ', ' ORDER BY g.nombre_grado),
+        'Sin grado asignado'
+    ) AS grados_asignados,
+    COALESCE(
+        ROUND(
+            (
+                AVG(
+                    (e.actitudinal + e.actividades + e.metodologia) / 3.0
+                )
+            )::numeric,
+            1
+        ),
+        0.0
+    ) AS promedio_eval
+FROM maestros m
+LEFT JOIN asignaciones a
+    ON a.id_profesor = m.id
+LEFT JOIN grados g
+    ON a.id_grado = g.id_grado
+LEFT JOIN evaluaciones e
+    ON e.id_asignacion = a.id
+GROUP BY
+    m.id,
+    m.nombre
+ORDER BY
+    m.nombre
+    """)
+    result = []
+    for row in rows:
+        promedio = float(row["promedio_eval"])
+        estado = "Activo" if promedio >= 4.0 else "Alerta"
+        result.append({
+            "id": row["id"],
+            "nombre": row["nombre"],
+            "grados_asignados": row["grados_asignados"] or "Sin asignar",
+            "promedio_eval": promedio,
+            "estado": estado,
+        })
+    return result
+
+
 # ── Consultas de detalle: estudiante individual ───────────────────────────────
 # Devuelve los datos de un único estudiante filtrado por su ID.
 # Se usa para mostrar el formulario de edición con los datos actuales.
@@ -583,4 +635,56 @@ async def eliminar_estudiante(conn, id_estudiante: int) -> bool:
     DELETE FROM estudiantes
     WHERE id = $1
         """,id_estudiante)
+    return result == "DELETE 1"
+
+
+# ── Eliminación de grado ────────────────────────────────────────────────────
+# Elimina un grado SOLO si no tiene estudiantes ni asignaciones asociadas
+# (operación segura: no borra en cascada nada de lo que cuelga del grado).
+# Retorna True si se eliminó exactamente 1 grado.
+
+async def eliminar_grado(conn, id_grado: int) -> bool:
+    fila = await conn.fetchrow(
+        """
+        SELECT
+            (SELECT COUNT(*) FROM estudiantes  WHERE id_grado = $1) AS n_estudiantes,
+            (SELECT COUNT(*) FROM asignaciones WHERE id_grado = $1) AS n_asignaciones
+        """,
+        id_grado,
+    )
+    if fila["n_estudiantes"] > 0 or fila["n_asignaciones"] > 0:
+        return False
+    result = await conn.execute(
+        "DELETE FROM grados WHERE id_grado = $1",
+        id_grado,
+    )
+    return result == "DELETE 1"
+
+
+# ── Listado de grados (panel admin) ─────────────────────────────────────────
+# Devuelve TODOS los grados existentes con su conteo real de estudiantes y
+# de profesores asignados (vía asignaciones). Se usa en la vista de gestión
+# de grados para renderizar una tarjeta por grado con datos de la BD.
+# Retorna lista de dicts: {id_grado, nombre_grado, n_estudiantes, n_profesores}
+
+async def listar_grados(conn) -> list[dict]:
+    rows = await conn.fetch("""
+        SELECT
+            g.id_grado,
+            g.nombre_grado,
+            (SELECT COUNT(*) FROM estudiantes e
+              WHERE e.id_grado = g.id_grado) AS n_estudiantes,
+            (SELECT COUNT(DISTINCT a.id_profesor) FROM asignaciones a
+              WHERE a.id_grado = g.id_grado) AS n_profesores
+        FROM grados g
+        ORDER BY g.id_grado;
+    """)
+    return [dict(row) for row in rows] if rows else []
+
+async def eliminar_grado(conn, id_grado: int) -> bool:
+    result = await conn.execute(
+        """
+        DELETE FROM grados
+        WHERE id_grado = $1;
+        """,id_grado)
     return result == "DELETE 1"

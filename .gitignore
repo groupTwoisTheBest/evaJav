@@ -7,3 +7,6 @@ pyproject.toml
 .python-version
 test/
 .vscode/
+.pytest_cache/
+.superpowers/
+docs/superpowers/

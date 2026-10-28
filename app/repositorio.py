@@ -673,9 +673,9 @@ async def listar_grados(conn) -> list[dict]:
             g.id_grado,
             g.nombre_grado,
             (SELECT COUNT(*) FROM estudiantes e
-              WHERE e.id_grado = g.id_grado) AS n_estudiantes,
+            WHERE e.id_grado = g.id_grado) AS n_estudiantes,
             (SELECT COUNT(DISTINCT a.id_profesor) FROM asignaciones a
-              WHERE a.id_grado = g.id_grado) AS n_profesores
+            WHERE a.id_grado = g.id_grado) AS n_profesores
         FROM grados g
         ORDER BY g.id_grado;
     """)
@@ -818,6 +818,6 @@ async def actualizar_profesor(conn, id_profesor: int, nombre: str) -> dict | Non
         WHERE id = $1
         RETURNING *
         """,
-        nombre, id_profesor
+        id_profesor, nombre
     )
     return dict(row) if row else None

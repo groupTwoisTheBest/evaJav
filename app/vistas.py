@@ -358,17 +358,21 @@ async def chip_materia_grado(
     tipo: Annotated[str, Form()],
     id: Annotated[int, Form()],
     nombre: Annotated[str, Form()],
-    seleccionado: Annotated[bool, Form()],
+    seleccionado: Annotated[str, Form()],
 ):
     """Alterna el estado seleccionado de un chip de materia o grado.
+
+    HTMX envía los valores de hx-vals como strings en el body del POST, por lo
+    que el parámetro se recibe como str y se convierte explícitamente a bool.
 
     Recibe el chip actual por Form data y devuelve el mismo chip con el
     estado invertido para que HTMX lo reemplace en el DOM.
     """
+    isSelected = seleccionado.lower() in ("true", "1", "yes")
     return templates.TemplateResponse(
         request=request,
         name="chip.html",
-        context={"tipo": tipo, "id": id, "nombre": nombre, "seleccionado": not seleccionado},
+        context={"tipo": tipo, "id": id, "nombre": nombre, "seleccionado": not isSelected},
     )
 
 

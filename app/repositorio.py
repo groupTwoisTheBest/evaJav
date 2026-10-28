@@ -712,6 +712,49 @@ async def listar_periodos(conn) -> list[dict]:
     return [dict(row) for row in rows] if rows else []
 
 
+# ── Nuevo profesor (alta completa) ────────────────────────────────────────────
+# Crea el maestro, una asignación por cada materia × grado seleccionado
+# (producto cruzado, todas con el mismo periodo) y matricula automáticamente
+# a los estudiantes existentes de cada grado en su nueva asignación.
+# Lanza ValueError si materias o grados vienen vacíos. Devuelve el id del maestro.
+
+async def guardar_maestro(conn, nombre: str, materias: list[int], grados: list[int], id_periodo: int) -> int:
+    if not materias or not grados:
+        raise ValueError("Debe indicar al menos una materia y un grado")
+
+    async with conn.transaction():
+        id_profesor = await conn.fetchval(
+            """
+            INSERT INTO maestros (nombre)
+            VALUES ($1)
+            RETURNING id
+            """,
+            nombre.strip()
+        )
+
+        for id_materia in materias:
+            for id_grado in grados:
+                id_asignacion = await conn.fetchval(
+                    """
+                    INSERT INTO asignaciones (id_profesor, id_materia, id_grado, id_periodo)
+                    VALUES ($1, $2, $3, $4)
+                    RETURNING id
+                    """,
+                    id_profesor, id_materia, id_grado, id_periodo
+                )
+
+                await conn.execute(
+                    """
+                    INSERT INTO inscripciones (id_estudiante, id_asignacion)
+                    SELECT id, $2 FROM estudiantes WHERE id_grado = $1
+                    ON CONFLICT (id_estudiante, id_asignacion) DO NOTHING
+                    """,
+                    id_grado, id_asignacion
+                )
+
+    return id_profesor
+
+
 # ── Profesor individual (edición inline, panel admin) ────────────────────────
 # Devuelve los datos de UN profesor para el formulario de edición inline (htmx).
 # Misma consulta/agregados que obtener_todos_los_profesores(), con WHERE m.id = $1.

@@ -37,6 +37,7 @@ from app.repositorio import (
     detalle_estudiantes, detalle_por_estudiantes, actualizarectudiante,
     eliminar_estudiante, obtener_todos_los_profesores,
     eliminar_grado as eliminar_grado_bd, listar_grados,
+    listar_materias, listar_periodos,
     detalle_por_profesor, actualizar_profesor,
 )
 from app.esquemas import (
@@ -316,11 +317,72 @@ async def read_gestion_profesores(request: Request, conn: ConnectionDep):
         )
 
 
-@router.get("/gestionProfesores/nuevo", response_class=HTMLResponse)
-async def read_gestion_profesores_nuevo(request: Request):
-    """Muestra el formulario vacío para crear un nuevo profesor."""
+async def _form_nuevo_profesor(request: Request, conn: ConnectionDep, error: str | None = None):
+    """Renderiza el formulario de nuevo profesor con las listas de la BD.
+
+    Carga materias, grados y periodos desde PostgreSQL y los pasa al template
+    `gestionProfesoresNuevo.html`. El parámetro `error` permite re-renderizar
+    el mismo formulario mostrando un mensaje de validación (lo usa el POST).
+    """
+    materias = await listar_materias(conn)
+    grados = await listar_grados(conn)
+    periodos = await listar_periodos(conn)
     return templates.TemplateResponse(
-        request=request, name="gestionProfesoresNuevo.html", context={}
+        request=request,
+        name="gestionProfesoresNuevo.html",
+        context={
+            "materias": materias,
+            "grados": grados,
+            "periodos": periodos,
+            "error": error,
+        },
+    )
+
+
+@router.get("/gestionProfesores/nuevo", response_class=HTMLResponse)
+async def read_gestion_profesores_nuevo(request: Request, conn: ConnectionDep):
+    """Muestra el formulario para crear un nuevo profesor.
+
+    Carga materias, grados y periodos desde la BD para poblar los chips
+    de selección del formulario.
+    """
+    return await _form_nuevo_profesor(request, conn)
+
+
+# ============ HTMX: chips de selección ============
+
+@router.post("/gestionProfesores/nuevo/chip")
+async def chip_materia_grado(
+    request: Request,
+    tipo: Annotated[str, Form()],
+    id: Annotated[int, Form()],
+    nombre: Annotated[str, Form()],
+    seleccionado: Annotated[bool, Form()],
+):
+    """Alterna el estado seleccionado de un chip de materia o grado.
+
+    Recibe el chip actual por Form data y devuelve el mismo chip con el
+    estado invertido para que HTMX lo reemplace en el DOM.
+    """
+    return templates.TemplateResponse(
+        request=request,
+        name="chip.html",
+        context={"tipo": tipo, "id": id, "nombre": nombre, "seleccionado": not seleccionado},
+    )
+
+
+@router.post("/gestionProfesores/nuevo/periodo")
+async def chip_periodo(request: Request, conn: ConnectionDep, id: Annotated[int, Form()]):
+    """Devuelve la lista completa de periodos con el periodo activo resaltado.
+
+    Recarga los periodos desde la BD y los renderiza en `periodosChips.html`
+    marcando como activo el periodo recibido por Form data.
+    """
+    periodos = await listar_periodos(conn)
+    return templates.TemplateResponse(
+        request=request,
+        name="periodosChips.html",
+        context={"periodos": periodos, "activo": id},
     )
 
 
@@ -415,15 +477,6 @@ async def eliminar_estudiante_ruta(request: Request, id_estudiante: int, conn: C
 # CRUD para administrar el listado de profesores registrados.
 # Todos estos endpoints son stubs (sin lógica real): solo renderizan templates
 # con datos genéricos o redirigen. No acceden a la base de datos ni validan datos.
-
-@router.get("/gestionProfesores/nuevo", response_class=HTMLResponse)
-async def nuevo_profesor_form(request: Request):
-    """Muestra el formulario vacío para crear un nuevo profesor.
-
-    Stub: renderiza un formulario genérico con título y acción predefinidos.
-    No valida ni carga datos previos.
-    """
-    return templates.TemplateResponse(request=request, name="gestionProfesoresForm.html", context={"titulo": "Nuevo Profesor", "accion": "/gestionProfesores/nuevo"})
 
 @router.post("/gestionProfesores/nuevo")
 async def crear_profesor(request: Request):

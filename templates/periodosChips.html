@@ -1,0 +1,11 @@
+<div id="periodos-chips">
+    {% for p in periodos %}
+    <button type="button" class="chip{% if activo == p.id %} selected{% endif %}"
+            hx-post="/gestionProfesores/nuevo/periodo"
+            hx-vals='{{ {"id": p.id} | tojson }}'
+            hx-target="#periodos-chips" hx-swap="outerHTML">
+        {{ p.nombre }} ({{ p.estado }})
+        {% if activo == p.id %}<input type="hidden" name="periodo" value="{{ p.id }}">{% endif %}
+    </button>
+    {% endfor %}
+</div>

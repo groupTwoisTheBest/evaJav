@@ -1,0 +1,7 @@
+<button type="button" class="chip{% if seleccionado %} selected{% endif %}"
+        hx-post="/gestionProfesores/nuevo/chip"
+        hx-vals='{{ {"tipo": tipo, "id": id, "nombre": nombre, "seleccionado": seleccionado} | tojson }}'
+        hx-target="this" hx-swap="outerHTML">
+    {{ nombre }}
+    {% if seleccionado %}<input type="hidden" name="{{ tipo }}s" value="{{ id }}">{% endif %}
+</button>

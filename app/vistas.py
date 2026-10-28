@@ -490,18 +490,24 @@ async def crear_profesor(
 ):
     """Crea un nuevo profesor a partir de los datos del formulario.
 
-    Valida que se haya seleccionado al menos una materia, un grado y un periodo;
-    si falta algo, re-renderiza el formulario con mensaje de error. Con datos
-    válidos guarda el profesor vía `guardar_maestro` (maestro + asignaciones +
-    inscripciones) y redirige al listado; si la BD falla, re-renderiza el
-    formulario con mensaje de error.
+    Valida que se haya seleccionado al menos una materia, un grado y un periodo,
+    y que el nombre no quede vacío tras recortar espacios; si falta algo,
+    re-renderiza el formulario con mensaje de error. Con datos válidos guarda el
+    profesor vía `guardar_maestro` (maestro + asignaciones + inscripciones) y
+    redirige al listado; si la BD falla, re-renderiza el formulario con mensaje
+    de error.
     """
     if not materias or not grados or periodo is None:
         return await _form_nuevo_profesor(
             request, conn, error="Selecciona al menos una materia, un grado y un periodo."
         )
+    nombre = nombre.strip()
+    if not nombre:
+        return await _form_nuevo_profesor(
+            request, conn, error="El nombre no puede estar vacío."
+        )
     try:
-        await guardar_maestro(conn, nombre.strip(), materias, grados, periodo)
+        await guardar_maestro(conn, nombre, materias, grados, periodo)
         return RedirectResponse(url="/gestionProfesores", status_code=status.HTTP_303_SEE_OTHER)
     except Exception as e:
         logger.error(f"Error guardando profesor '{nombre}': {type(e).__name__}: {e}")

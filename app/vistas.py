@@ -39,6 +39,7 @@ from app.repositorio import (
     eliminar_grado as eliminar_grado_bd, listar_grados,
     listar_materias, listar_periodos,
     detalle_por_profesor, actualizar_profesor,
+    guardar_maestro,
 )
 from app.esquemas import (
     CrearEstudiante, CrearMaestro, GuardarEstudiante, GuardarProfesor,
@@ -479,12 +480,34 @@ async def eliminar_estudiante_ruta(request: Request, id_estudiante: int, conn: C
 # con datos genéricos o redirigen. No acceden a la base de datos ni validan datos.
 
 @router.post("/gestionProfesores/nuevo")
-async def crear_profesor(request: Request):
+async def crear_profesor(
+    request: Request,
+    conn: ConnectionDep,
+    nombre: Annotated[str, Form(min_length=1, max_length=60)],
+    materias: Annotated[list[int], Form()] = [],
+    grados: Annotated[list[int], Form()] = [],
+    periodo: Annotated[int | None, Form()] = None,
+):
     """Crea un nuevo profesor a partir de los datos del formulario.
 
-    Stub: no extrae ni valida datos del request. Simplemente redirige al listado.
+    Valida que se haya seleccionado al menos una materia, un grado y un periodo;
+    si falta algo, re-renderiza el formulario con mensaje de error. Con datos
+    válidos guarda el profesor vía `guardar_maestro` (maestro + asignaciones +
+    inscripciones) y redirige al listado; si la BD falla, re-renderiza el
+    formulario con mensaje de error.
     """
-    return RedirectResponse(url="/gestionProfesores", status_code=status.HTTP_303_SEE_OTHER)
+    if not materias or not grados or periodo is None:
+        return await _form_nuevo_profesor(
+            request, conn, error="Selecciona al menos una materia, un grado y un periodo."
+        )
+    try:
+        await guardar_maestro(conn, nombre.strip(), materias, grados, periodo)
+        return RedirectResponse(url="/gestionProfesores", status_code=status.HTTP_303_SEE_OTHER)
+    except Exception as e:
+        logger.error(f"Error guardando profesor '{nombre}': {type(e).__name__}: {e}")
+        return await _form_nuevo_profesor(
+            request, conn, error="No se pudo guardar el profesor. Verifica los datos e intenta de nuevo."
+        )
 
 @router.get("/gestionProfesores/cancelar", response_class=HTMLResponse)
 async def cancelar_edicion_profesor(request: Request):

@@ -710,3 +710,71 @@ async def listar_periodos(conn) -> list[dict]:
         ORDER BY id DESC;
     """)
     return [dict(row) for row in rows] if rows else []
+
+
+# ── Profesor individual (edición inline, panel admin) ────────────────────────
+# Devuelve los datos de UN profesor para el formulario de edición inline (htmx).
+# Misma consulta/agregados que obtener_todos_los_profesores(), con WHERE m.id = $1.
+# Se mantiene GROUP BY m.id, m.nombre: sin él, un ID inexistente devolvería una
+# fila de agregados NULL en vez de ninguna fila (rompería el retorno None).
+# Retorna dict: {id, nombre, grados_asignados, promedio_eval, estado} o None.
+
+async def detalle_por_profesor(conn, id_profesor: int) -> dict | None:
+    row = await conn.fetchrow("""
+        SELECT
+            m.id,
+            m.nombre,
+            COALESCE(
+                STRING_AGG(DISTINCT g.nombre_grado, ', ' ORDER BY g.nombre_grado),
+                'Sin grado asignado'
+            ) AS grados_asignados,
+            COALESCE(
+                ROUND(
+                    (
+                        AVG(
+                            (e.actitudinal + e.actividades + e.metodologia) / 3.0
+                        )
+                    )::numeric,
+                    1
+                ),
+                0.0
+            ) AS promedio_eval
+        FROM maestros m
+        LEFT JOIN asignaciones a
+            ON a.id_profesor = m.id
+        LEFT JOIN grados g
+            ON a.id_grado = g.id_grado
+        LEFT JOIN evaluaciones e
+            ON e.id_asignacion = a.id
+        WHERE m.id = $1
+        GROUP BY
+            m.id,
+            m.nombre
+        """, id_profesor)
+    if row is None:
+        return None
+    promedio = float(row["promedio_eval"])
+    return {
+        "id": row["id"],
+        "nombre": row["nombre"],
+        "grados_asignados": row["grados_asignados"] or "Sin asignar",
+        "promedio_eval": promedio,
+        "estado": "Activo" if promedio >= 4.0 else "Alerta",
+    }
+
+
+# ── Actualización de profesor ────────────────────────────────────────────────
+# Modifica el nombre de un profesor existente (único campo editable inline).
+# Usa RETURNING * para devolver el registro actualizado (patrón actualizarectudiante).
+
+async def actualizar_profesor(conn, id_profesor: int, nombre: str) -> dict | None:
+    row = await conn.fetchrow(
+        """
+        UPDATE maestros
+        SET nombre = $2
+        WHERE id = $1
+        RETURNING *
+        """,
+        nombre, id_profesor
+    )
+    return dict(row) if row else None

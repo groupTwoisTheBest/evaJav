@@ -35,7 +35,7 @@
                     <td><span class="badge {% if teacher.estado == 'Activo' %}ok vivo{% else %}off{% endif %}">{{ teacher.estado }}</span></td>
                     <td>
                         <div class="row-actions">
-                            <a href="/gestionProfesores/{{ teacher.id }}/editar" class="btn sm ghost">Editar</a>
+                            <button hx-get="/gestionProfesores/{{ teacher.id }}/editar" hx-target="closest tr" hx-swap="outerHTML" class="btn sm ghost">Editar</button>
                             <button class="btn sm danger">Eliminar</button>
                         </div>
                     </td>

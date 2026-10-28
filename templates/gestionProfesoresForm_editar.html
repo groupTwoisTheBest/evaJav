@@ -1,0 +1,12 @@
+<tr>
+    <td><input type="text" value="{{ profesor.nombre }}" class="input" name="nombre" required></td>
+    <td><span class="badge">{{ profesor.grados_asignados }}</span></td>
+    <td><span class="badge {% if profesor.promedio_eval >= 3.5 %}ok{% else %}off{% endif %}">{{ profesor.promedio_eval }}</span></td>
+    <td><span class="badge {% if profesor.estado == 'Activo' %}ok vivo{% else %}off{% endif %}">{{ profesor.estado }}</span></td>
+    <td>
+        <div class="row-actions">
+            <button hx-put="/gestionProfesores/{{ profesor.id }}/guardar" hx-include="closest tr" hx-target="closest tr" hx-swap="outerHTML" class="btn sm ghost">guardar</button>
+            <button hx-get="/gestionProfesores/cancelar" class="btn sm ghost">cancelar</button>
+        </div>
+    </td>
+</tr>

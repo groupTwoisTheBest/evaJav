@@ -8,7 +8,7 @@ Este módulo define las dependencias reutilizables que se inyectan en los endpoi
 import asyncpg
 from fastapi import Depends, HTTPException, Request, status
 from typing import Annotated
-
+import asyncio
 from app.database import get_db
 from app.seguridad import verify_token
 
@@ -49,28 +49,3 @@ Se usa como argumento de los endpoints que requieren autenticación.
 Devuelve un string (email) o lanza HTTPException si no hay token válido.
 """
 
-
-# Rutas públicas que NO deben ser protegidas por proteger_get.
-RUTAS_PUBLICAS = frozenset({
-    "/",
-    "/inicio-sesion",
-    "/registrarse",
-    "/administrador/iniciar-sesion",
-})
-
-
-async def proteger_get(request: Request) -> None:
-    """Dependencia que protege todas las rutas GET.
-
-    Verifica que el usuario esté autenticado (cookie JWT válida).
-    Las rutas en `RUTAS_PUBLICAS` son excluidas.
-    Si no está autenticado, lanza HTTPException 303 hacia `/`.
-
-    Esta dependencia se inyecta a nivel de `APIRouter` para cubrir
-    automáticamente todas las rutas GET registradas en ella.
-    """
-    path = request.url.path
-    if path in RUTAS_PUBLICAS:
-        return None
-    await get_current_user(request)
-    return None

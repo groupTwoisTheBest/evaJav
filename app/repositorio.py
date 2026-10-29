@@ -41,6 +41,9 @@ async def inicio_sesion_admin(conn, email: str, contrasenna: str) -> dict | None
 async def existe_email(conn, email: str) -> bool:
     row = await conn.fetchrow("SELECT 1 FROM estudiantes WHERE email = $1", email)
     return row is not None
+async def existe_email_admin(conn, email: str) -> bool:
+    row = await conn.fetchrow("SELECT 1 FROM administradores WHERE email = $1", email)
+    return row is not None
 
 # ── Registro de estudiantes ───────────────────────────────────────────────────
 # Crea un nuevo estudiante en la tabla correspondiente.

@@ -39,19 +39,16 @@ from app.repositorio import (
     eliminar_grado as eliminar_grado_bd, listar_grados,
     listar_materias, listar_periodos,
     detalle_por_profesor, actualizar_profesor,
-    guardar_maestro,
+    guardar_maestro,existe_email_admin
 )
 from app.esquemas import (
     CrearEstudiante, CrearMaestro, GuardarEstudiante, GuardarProfesor,
     LoginSchema, CalificacionSchema, SeleccionProfesorSchema,
 )
 from app.seguridad import create_token
-from app.dependencias import proteger_get
 from fastapi.responses import Response
 
-router = APIRouter(
-    dependencies=[Depends(proteger_get)],
-)
+router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 
@@ -237,7 +234,7 @@ async def seleccionar_profesor(request: Request, conn: ConnectionDep, email: Cur
 # ============ DASHBOARD ADMINISTRADOR ============
 
 @router.get("/centroEstadistico", response_class=HTMLResponse)
-async def read_centro_estadistico(request: Request, conn: ConnectionDep):
+async def read_centro_estadistico(request: Request, conn: ConnectionDep,email: CurrentUserDep):
     """Muestra el centro estadístico del panel de administración.
     
     1. Compila todas las métricas generales vía `estadisticas_admin()` de repositorio.py.
@@ -245,6 +242,7 @@ async def read_centro_estadistico(request: Request, conn: ConnectionDep):
        mejor profesor por grado, estado del periodo).
     3. Renderiza `centroEstadistico.html` con ambos conjuntos de datos fusionados.
     """
+    await existe_email_admin(conn,email)
     contexto = await estadisticas_admin(conn)
     dpg = await detalle_por_grado(conn)
     return templates.TemplateResponse(
@@ -262,6 +260,7 @@ async def read_administrador(request: Request, email: CurrentUserDep, conn: Conn
     2. Compila métricas generales con `estadisticas_admin()`.
     3. Renderiza el dashboard con esas métricas.
     """
+    await existe_email_admin(conn,email)
     contexto = await estadisticas_admin(conn)
     return templates.TemplateResponse(
         request=request, name="administradorMain.html", context=contexto
@@ -269,7 +268,7 @@ async def read_administrador(request: Request, email: CurrentUserDep, conn: Conn
 
 
 @router.get("/gestionGrados", response_class=HTMLResponse)
-async def read_gestion_grados(request: Request, conn: ConnectionDep):
+async def read_gestion_grados(request: Request, conn: ConnectionDep,email:CurrentUserDep):
     """Muestra la página de gestión de grados con las métricas generales.
     
     1. Obtiene estadísticas generales con `estadisticas_admin()`.
@@ -280,6 +279,7 @@ async def read_gestion_grados(request: Request, conn: ConnectionDep):
     de CRUD de grados (línea 341). Esta es la versión completa que recibe
     ConnectionDep y pasa estadísticas al template.
     """
+    await existe_email_admin(conn,email)
     contexto = await estadisticas_admin(conn)
     contexto["grados"] = await listar_grados(conn)
     return templates.TemplateResponse(
@@ -288,20 +288,22 @@ async def read_gestion_grados(request: Request, conn: ConnectionDep):
 
 
 @router.get("/gestionGrados/nuevo", response_class=HTMLResponse)
-async def read_gestion_grados_nuevo(request: Request):
+async def read_gestion_grados_nuevo(request: Request,email:CurrentUserDep):
     """Muestra el formulario vacío para crear un nuevo grado."""
+    await existe_email_admin(conn,email)
     return templates.TemplateResponse(
         request=request, name="gestionGradoNuevo.html", context={}
     )
 
 
 @router.get("/gestionProfesores", response_class=HTMLResponse)
-async def read_gestion_profesores(request: Request, conn: ConnectionDep):
+async def read_gestion_profesores(request: Request, conn: ConnectionDep,email:CurrentUserDep):
     """Muestra la página de gestión de profesores con datos reales de la BD.
     
     Obtiene todos los profesores, su grado asignado, promedio de evaluación
     y estado (Activo/Alerta) desde PostgreSQL.
     """
+    await existe_email_admin(conn,email)
     try:
         teachers = await obtener_todos_los_profesores(conn)
         logger.info(f"gestionProfesores cargado con {len(teachers)} profesores")
@@ -323,6 +325,7 @@ async def _form_nuevo_profesor(request: Request, conn: ConnectionDep, error: str
     `gestionProfesoresNuevo.html`. El parámetro `error` permite re-renderizar
     el mismo formulario mostrando un mensaje de validación (lo usa el POST).
     """
+    
     materias = await listar_materias(conn)
     grados = await listar_grados(conn)
     periodos = await listar_periodos(conn)
@@ -339,12 +342,14 @@ async def _form_nuevo_profesor(request: Request, conn: ConnectionDep, error: str
 
 
 @router.get("/gestionProfesores/nuevo", response_class=HTMLResponse)
-async def read_gestion_profesores_nuevo(request: Request, conn: ConnectionDep):
+async def read_gestion_profesores_nuevo(request: Request, conn: ConnectionDep,email: CurrentUserDep):
     """Muestra el formulario para crear un nuevo profesor.
 
     Carga materias, grados y periodos desde la BD para poblar los chips
     de selección del formulario.
     """
+    await existe_email_admin(conn,email)
+
     return await _form_nuevo_profesor(request, conn)
 
 
@@ -400,11 +405,12 @@ async def configuracion(request: Request):
 # ============ GESTIÓN DE ESTUDIANTES ============
 
 @router.get("/gestionEstudiantes", response_class=HTMLResponse)
-async def read_gestion_estudiantes(request: Request, conn: ConnectionDep):
+async def read_gestion_estudiantes(request: Request, conn: ConnectionDep,email:CurrentUserDep):
     """Muestra la página de gestión de estudiantes con la lista completa de estudiantes registrados.
 
     Obtiene los datos de estudiantes desde la base de datos y los pasa al template.
     """
+    await existe_email_admin(conn,email)
     estudiantes = await detalle_estudiantes(conn)
     return templates.TemplateResponse(request=request, name="gestionEstudiantes.html", context={"estudiantes": estudiantes})
 
@@ -640,17 +646,7 @@ async def eliminar_grado(request: Request, id: int, conn: ConnectionDep):
     return RedirectResponse(url="/gestionGrados", status_code=status.HTTP_303_SEE_OTHER)
 
 
-# ============ HISTORIAL DE CAMBIOS ============
-# Visualización del historial de acciones realizadas en la plataforma.
 
-@router.get("/historialCambios", response_class=HTMLResponse)
-async def read_historial_cambios(request: Request):
-    """Muestra la página de historial de cambios realizados.
-
-    Stub: renderiza `historialCambios.html` con contexto vacío.
-    No carga datos del historial.
-    """
-    return templates.TemplateResponse(request=request, name="historialCambios.html", context={})
 
 
 @router.post("/calificaElProfesor")

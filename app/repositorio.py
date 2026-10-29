@@ -547,6 +547,58 @@ async def actualizarectudiante(conn, id_estudiante: int, nombre: str, email: str
         )
     return dict(row) if row else None
 
+# ── Consulta de todos los profesores (panel admin) ────────────────────────────
+# Devuelve todos los profesores con su grado asignado y promedio de evaluación.
+# Se usa en el panel de administración para gestionar la lista de profesores.
+# Retorna lista de dicts: {id, nombre, grado_asignado, promedio_eval, estado}
+
+async def obtener_todos_los_profesores(conn) -> list[dict]:
+    rows = await conn.fetch("""
+SELECT
+    m.id,
+    m.nombre,
+    COALESCE(
+        STRING_AGG(DISTINCT g.nombre_grado, ', ' ORDER BY g.nombre_grado),
+        'Sin grado asignado'
+    ) AS grados_asignados,
+    COALESCE(
+        ROUND(
+            (
+                AVG(
+                    (e.actitudinal + e.actividades + e.metodologia) / 3.0
+                )
+            )::numeric,
+            1
+        ),
+        0.0
+    ) AS promedio_eval
+FROM maestros m
+LEFT JOIN asignaciones a
+    ON a.id_profesor = m.id
+LEFT JOIN grados g
+    ON a.id_grado = g.id_grado
+LEFT JOIN evaluaciones e
+    ON e.id_asignacion = a.id
+GROUP BY
+    m.id,
+    m.nombre
+ORDER BY
+    m.nombre
+    """)
+    result = []
+    for row in rows:
+        promedio = float(row["promedio_eval"])
+        estado = "Activo" if promedio >= 4.0 else "Alerta"
+        result.append({
+            "id": row["id"],
+            "nombre": row["nombre"],
+            "grados_asignados": row["grados_asignados"] or "Sin asignar",
+            "promedio_eval": promedio,
+            "estado": estado,
+        })
+    return result
+
+
 # ── Consultas de detalle: estudiante individual ───────────────────────────────
 # Devuelve los datos de un único estudiante filtrado por su ID.
 # Se usa para mostrar el formulario de edición con los datos actuales.
@@ -584,3 +636,188 @@ async def eliminar_estudiante(conn, id_estudiante: int) -> bool:
     WHERE id = $1
         """,id_estudiante)
     return result == "DELETE 1"
+
+
+# ── Eliminación de grado ────────────────────────────────────────────────────
+# Elimina un grado SOLO si no tiene estudiantes ni asignaciones asociadas
+# (operación segura: no borra en cascada nada de lo que cuelga del grado).
+# Retorna True si se eliminó exactamente 1 grado.
+
+async def eliminar_grado(conn, id_grado: int) -> bool:
+    fila = await conn.fetchrow(
+        """
+        SELECT
+            (SELECT COUNT(*) FROM estudiantes  WHERE id_grado = $1) AS n_estudiantes,
+            (SELECT COUNT(*) FROM asignaciones WHERE id_grado = $1) AS n_asignaciones
+        """,
+        id_grado,
+    )
+    if fila["n_estudiantes"] > 0 or fila["n_asignaciones"] > 0:
+        return False
+    result = await conn.execute(
+        "DELETE FROM grados WHERE id_grado = $1",
+        id_grado,
+    )
+    return result == "DELETE 1"
+
+
+# ── Listado de grados (panel admin) ─────────────────────────────────────────
+# Devuelve TODOS los grados existentes con su conteo real de estudiantes y
+# de profesores asignados (vía asignaciones). Se usa en la vista de gestión
+# de grados para renderizar una tarjeta por grado con datos de la BD.
+# Retorna lista de dicts: {id_grado, nombre_grado, n_estudiantes, n_profesores}
+
+async def listar_grados(conn) -> list[dict]:
+    rows = await conn.fetch("""
+        SELECT
+            g.id_grado,
+            g.nombre_grado,
+            (SELECT COUNT(*) FROM estudiantes e
+            WHERE e.id_grado = g.id_grado) AS n_estudiantes,
+            (SELECT COUNT(DISTINCT a.id_profesor) FROM asignaciones a
+            WHERE a.id_grado = g.id_grado) AS n_profesores
+        FROM grados g
+        ORDER BY g.id_grado;
+    """)
+    return [dict(row) for row in rows] if rows else []
+
+async def eliminar_grado(conn, id_grado: int) -> bool:
+    result = await conn.execute(
+        """
+        DELETE FROM grados
+        WHERE id_grado = $1;
+        """,id_grado)
+    return result == "DELETE 1"
+
+
+# ── Catálogos para nuevo profesor ─────────────────────────────────────────────
+# Devuelven las listas desplegables que el formulario de "Nuevo profesor" necesita:
+# materias (id, nombre_materia), periodos (id, nombre, estado).
+# Para los grados se reutiliza listar_grados() de arriba ({id_grado, nombre_grado, ...}).
+
+async def listar_materias(conn) -> list[dict]:
+    rows = await conn.fetch("""
+        SELECT id, nombre_materia
+        FROM materias
+        ORDER BY nombre_materia;
+    """)
+    return [dict(row) for row in rows] if rows else []
+
+async def listar_periodos(conn) -> list[dict]:
+    rows = await conn.fetch("""
+        SELECT id, nombre, estado
+        FROM periodos
+        ORDER BY id DESC;
+    """)
+    return [dict(row) for row in rows] if rows else []
+
+
+# ── Nuevo profesor (alta completa) ────────────────────────────────────────────
+# Crea el maestro, una asignación por cada materia × grado seleccionado
+# (producto cruzado, todas con el mismo periodo) y matricula automáticamente
+# a los estudiantes existentes de cada grado en su nueva asignación.
+# Lanza ValueError si materias o grados vienen vacíos. Devuelve el id del maestro.
+
+async def guardar_maestro(conn, nombre: str, materias: list[int], grados: list[int], id_periodo: int) -> int:
+    if not materias or not grados:
+        raise ValueError("Debe indicar al menos una materia y un grado")
+
+    async with conn.transaction():
+        id_profesor = await conn.fetchval(
+            """
+            INSERT INTO maestros (nombre)
+            VALUES ($1)
+            RETURNING id
+            """,
+            nombre.strip()
+        )
+
+        for id_materia in materias:
+            for id_grado in grados:
+                id_asignacion = await conn.fetchval(
+                    """
+                    INSERT INTO asignaciones (id_profesor, id_materia, id_grado, id_periodo)
+                    VALUES ($1, $2, $3, $4)
+                    RETURNING id
+                    """,
+                    id_profesor, id_materia, id_grado, id_periodo
+                )
+
+                await conn.execute(
+                    """
+                    INSERT INTO inscripciones (id_estudiante, id_asignacion)
+                    SELECT id, $2 FROM estudiantes WHERE id_grado = $1
+                    ON CONFLICT (id_estudiante, id_asignacion) DO NOTHING
+                    """,
+                    id_grado, id_asignacion
+                )
+
+    return id_profesor
+
+
+# ── Profesor individual (edición inline, panel admin) ────────────────────────
+# Devuelve los datos de UN profesor para el formulario de edición inline (htmx).
+# Misma consulta/agregados que obtener_todos_los_profesores(), con WHERE m.id = $1.
+# Se mantiene GROUP BY m.id, m.nombre: sin él, un ID inexistente devolvería una
+# fila de agregados NULL en vez de ninguna fila (rompería el retorno None).
+# Retorna dict: {id, nombre, grados_asignados, promedio_eval, estado} o None.
+
+async def detalle_por_profesor(conn, id_profesor: int) -> dict | None:
+    row = await conn.fetchrow("""
+        SELECT
+            m.id,
+            m.nombre,
+            COALESCE(
+                STRING_AGG(DISTINCT g.nombre_grado, ', ' ORDER BY g.nombre_grado),
+                'Sin grado asignado'
+            ) AS grados_asignados,
+            COALESCE(
+                ROUND(
+                    (
+                        AVG(
+                            (e.actitudinal + e.actividades + e.metodologia) / 3.0
+                        )
+                    )::numeric,
+                    1
+                ),
+                0.0
+            ) AS promedio_eval
+        FROM maestros m
+        LEFT JOIN asignaciones a
+            ON a.id_profesor = m.id
+        LEFT JOIN grados g
+            ON a.id_grado = g.id_grado
+        LEFT JOIN evaluaciones e
+            ON e.id_asignacion = a.id
+        WHERE m.id = $1
+        GROUP BY
+            m.id,
+            m.nombre
+        """, id_profesor)
+    if row is None:
+        return None
+    promedio = float(row["promedio_eval"])
+    return {
+        "id": row["id"],
+        "nombre": row["nombre"],
+        "grados_asignados": row["grados_asignados"] or "Sin asignar",
+        "promedio_eval": promedio,
+        "estado": "Activo" if promedio >= 4.0 else "Alerta",
+    }
+
+
+# ── Actualización de profesor ────────────────────────────────────────────────
+# Modifica el nombre de un profesor existente (único campo editable inline).
+# Usa RETURNING * para devolver el registro actualizado (patrón actualizarectudiante).
+
+async def actualizar_profesor(conn, id_profesor: int, nombre: str) -> dict | None:
+    row = await conn.fetchrow(
+        """
+        UPDATE maestros
+        SET nombre = $2
+        WHERE id = $1
+        RETURNING *
+        """,
+        id_profesor, nombre
+    )
+    return dict(row) if row else None

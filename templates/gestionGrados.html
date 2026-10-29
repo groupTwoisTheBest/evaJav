@@ -37,95 +37,24 @@
 </div>
 
 <div class="grid">
+    {% for g in grados %}
     <div class="card">
         <div class="grado-header">
-            <p class="muted">11°</p>
-            <span class="badge ok">Activo</span>
+            <p class="muted">{{ g.nombre_grado }}°</p>
         </div>
-        <p class="stat">{{ n_e_1 }}</p>
+        <p class="stat">{{ g.n_estudiantes }}</p>
         <p class="small muted">estudiantes</p>
         <hr class="divider">
-        <p class="small muted">28 profesores asignados</p>
+        <p class="small muted">{{ g.n_profesores }} profesores asignados</p>
         <div class="row-actions mt">
-            <a href="/gestionGrados/1/editar" class="btn sm ghost">Editar</a>
-            <button class="btn sm danger">Eliminar</button>
+            <button hx-delete="/gestionGrados/{{ g.id_grado }}/eliminar" class="btn sm danger">Eliminar</button>
         </div>
     </div>
-
+    {% else %}
     <div class="card">
-        <div class="grado-header">
-            <p class="muted">10°</p>
-            <span class="badge ok">Activo</span>
-        </div>
-        <p class="stat">{{ n_e_2 }}</p>
-        <p class="small muted">estudiantes</p>
-        <hr class="divider">
-        <p class="small muted">26 profesores asignados</p>
-        <div class="row-actions mt">
-            <a href="/gestionGrados/2/editar" class="btn sm ghost">Editar</a>
-            <button class="btn sm danger">Eliminar</button>
-        </div>
+        <p class="small muted">No hay grados registrados.</p>
     </div>
-
-    <div class="card">
-        <div class="grado-header">
-            <p class="muted">9°</p>
-            <span class="badge ok">Activo</span>
-        </div>
-        <p class="stat">{{ n_e_3 }}</p>
-        <p class="small muted">estudiantes</p>
-        <hr class="divider">
-        <p class="small muted">30 profesores asignados</p>
-        <div class="row-actions mt">
-            <a href="/gestionGrados/3/editar" class="btn sm ghost">Editar</a>
-            <button class="btn sm danger">Eliminar</button>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="grado-header">
-            <p class="muted">8°</p>
-            <span class="badge ok">Activo</span>
-        </div>
-        <p class="stat">{{ n_e_4 }}</p>
-        <p class="small muted">estudiantes</p>
-        <hr class="divider">
-        <p class="small muted">24 profesores asignados</p>
-        <div class="row-actions mt">
-            <a href="/gestionGrados/4/editar" class="btn sm ghost">Editar</a>
-            <button class="btn sm danger">Eliminar</button>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="grado-header">
-            <p class="muted">7°</p>
-            <span class="badge ok">Activo</span>
-        </div>
-        <p class="stat">{{ n_e_5 }}</p>
-        <p class="small muted">estudiantes</p>
-        <hr class="divider">
-        <p class="small muted">22 profesores asignados</p>
-        <div class="row-actions mt">
-            <a href="/gestionGrados/5/editar" class="btn sm ghost">Editar</a>
-            <button class="btn sm danger">Eliminar</button>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="grado-header">
-            <p class="muted">6°</p>
-            <span class="badge ok">Activo</span>
-        </div>
-        <p class="stat">{{ n_e_6 }} </p>
-        <p class="small muted">estudiantes</p>
-        <hr class="divider">
-        <p class="small muted">20 profesores asignados</p>
-        <div class="row-actions mt">
-            <a href="/gestionGrados/6/editar" class="btn sm ghost">Editar</a>
-            <button class="btn sm danger">Eliminar</button>
-        </div>
-    </div>
+    {% endfor %}
 </div>
 
 {% endblock %}

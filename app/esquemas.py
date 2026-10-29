@@ -21,6 +21,9 @@ class GuardarEstudiante(BaseModel):
     email: EmailStr
     grado: int
 
+class GuardarProfesor(BaseModel):
+    nombre: Annotated[str, Field(min_length=1, max_length=100)]
+
 class LoginSchema(BaseModel):
     email: EmailStr
     contrasenna: Annotated[str, Field(min_length=1)]

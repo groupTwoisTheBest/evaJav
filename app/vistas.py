@@ -35,10 +35,14 @@ from app.repositorio import (
     inicio_sesion_admin, select_profesor, nombre_estudiante,
     registrar_calificacion, estadisticas_admin, detalle_por_grado,
     detalle_estudiantes, detalle_por_estudiantes, actualizarectudiante,
-    eliminar_estudiante,
+    eliminar_estudiante, obtener_todos_los_profesores,
+    eliminar_grado as eliminar_grado_bd, listar_grados,
+    listar_materias, listar_periodos,
+    detalle_por_profesor, actualizar_profesor,
+    guardar_maestro,
 )
 from app.esquemas import (
-    CrearEstudiante, CrearMaestro, GuardarEstudiante,
+    CrearEstudiante, CrearMaestro, GuardarEstudiante, GuardarProfesor,
     LoginSchema, CalificacionSchema, SeleccionProfesorSchema,
 )
 from app.seguridad import create_token
@@ -271,13 +275,15 @@ async def read_gestion_grados(request: Request, conn: ConnectionDep):
     """Muestra la página de gestión de grados con las métricas generales.
     
     1. Obtiene estadísticas generales con `estadisticas_admin()`.
-    2. Renderiza `gestionGrados.html` con esas métricas.
+    2. Obtiene la lista real de grados con `listar_grados()`.
+    3. Renderiza `gestionGrados.html` con esas métricas y el listado.
     
     Nota: Este endpoint tiene una versión duplicada sin contexto en la sección
     de CRUD de grados (línea 341). Esta es la versión completa que recibe
     ConnectionDep y pasa estadísticas al template.
     """
     contexto = await estadisticas_admin(conn)
+    contexto["grados"] = await listar_grados(conn)
     return templates.TemplateResponse(
         request=request, name="gestionGrados.html", context=contexto
     )
@@ -292,21 +298,96 @@ async def read_gestion_grados_nuevo(request: Request):
 
 
 @router.get("/gestionProfesores", response_class=HTMLResponse)
-async def read_gestion_profesores(request: Request):
-    """Muestra la página de gestión de profesores.
+async def read_gestion_profesores(request: Request, conn: ConnectionDep):
+    """Muestra la página de gestión de profesores con datos reales de la BD.
     
-    Actualmente es un stub: solo renderiza el template sin datos de la BD.
+    Obtiene todos los profesores, su grado asignado, promedio de evaluación
+    y estado (Activo/Alerta) desde PostgreSQL.
     """
+    try:
+        teachers = await obtener_todos_los_profesores(conn)
+        logger.info(f"gestionProfesores cargado con {len(teachers)} profesores")
+        return templates.TemplateResponse(
+            request=request, name="gestionProfesores.html", context={"teachers": teachers}
+        )
+    except Exception as e:
+        logger.error(f"Error en gestionProfesores: {type(e).__name__}: {e}")
+        return HTMLResponse(
+            content="Error al cargar los profesores. Intente de nuevo.",
+            status_code=500,
+        )
+
+
+async def _form_nuevo_profesor(request: Request, conn: ConnectionDep, error: str | None = None):
+    """Renderiza el formulario de nuevo profesor con las listas de la BD.
+
+    Carga materias, grados y periodos desde PostgreSQL y los pasa al template
+    `gestionProfesoresNuevo.html`. El parámetro `error` permite re-renderizar
+    el mismo formulario mostrando un mensaje de validación (lo usa el POST).
+    """
+    materias = await listar_materias(conn)
+    grados = await listar_grados(conn)
+    periodos = await listar_periodos(conn)
     return templates.TemplateResponse(
-        request=request, name="gestionProfesores.html", context={}
+        request=request,
+        name="gestionProfesoresNuevo.html",
+        context={
+            "materias": materias,
+            "grados": grados,
+            "periodos": periodos,
+            "error": error,
+        },
     )
 
 
 @router.get("/gestionProfesores/nuevo", response_class=HTMLResponse)
-async def read_gestion_profesores_nuevo(request: Request):
-    """Muestra el formulario vacío para crear un nuevo profesor."""
+async def read_gestion_profesores_nuevo(request: Request, conn: ConnectionDep):
+    """Muestra el formulario para crear un nuevo profesor.
+
+    Carga materias, grados y periodos desde la BD para poblar los chips
+    de selección del formulario.
+    """
+    return await _form_nuevo_profesor(request, conn)
+
+
+# ============ HTMX: chips de selección ============
+
+@router.post("/gestionProfesores/nuevo/chip")
+async def chip_materia_grado(
+    request: Request,
+    tipo: Annotated[str, Form()],
+    id: Annotated[int, Form()],
+    nombre: Annotated[str, Form()],
+    seleccionado: Annotated[str, Form()],
+):
+    """Alterna el estado seleccionado de un chip de materia o grado.
+
+    HTMX envía los valores de hx-vals como strings en el body del POST, por lo
+    que el parámetro se recibe como str y se convierte explícitamente a bool.
+
+    Recibe el chip actual por Form data y devuelve el mismo chip con el
+    estado invertido para que HTMX lo reemplace en el DOM.
+    """
+    isSelected = seleccionado.lower() in ("true", "1", "yes")
     return templates.TemplateResponse(
-        request=request, name="gestionProfesoresNuevo.html", context={}
+        request=request,
+        name="chip.html",
+        context={"tipo": tipo, "id": id, "nombre": nombre, "seleccionado": not isSelected},
+    )
+
+
+@router.post("/gestionProfesores/nuevo/periodo")
+async def chip_periodo(request: Request, conn: ConnectionDep, id: Annotated[int, Form()]):
+    """Devuelve la lista completa de periodos con el periodo activo resaltado.
+
+    Recarga los periodos desde la BD y los renderiza en `periodosChips.html`
+    marcando como activo el periodo recibido por Form data.
+    """
+    periodos = await listar_periodos(conn)
+    return templates.TemplateResponse(
+        request=request,
+        name="periodosChips.html",
+        context={"periodos": periodos, "activo": id},
     )
 
 
@@ -402,22 +483,51 @@ async def eliminar_estudiante_ruta(request: Request, id_estudiante: int, conn: C
 # Todos estos endpoints son stubs (sin lógica real): solo renderizan templates
 # con datos genéricos o redirigen. No acceden a la base de datos ni validan datos.
 
-@router.get("/gestionProfesores/nuevo", response_class=HTMLResponse)
-async def nuevo_profesor_form(request: Request):
-    """Muestra el formulario vacío para crear un nuevo profesor.
-
-    Stub: renderiza un formulario genérico con título y acción predefinidos.
-    No valida ni carga datos previos.
-    """
-    return templates.TemplateResponse(request=request, name="gestionProfesoresForm.html", context={"titulo": "Nuevo Profesor", "accion": "/gestionProfesores/nuevo"})
-
 @router.post("/gestionProfesores/nuevo")
-async def crear_profesor(request: Request):
+async def crear_profesor(
+    request: Request,
+    conn: ConnectionDep,
+    nombre: Annotated[str, Form(min_length=1, max_length=60)],
+    materias: Annotated[list[int], Form()] = [],
+    grados: Annotated[list[int], Form()] = [],
+    periodo: Annotated[int | None, Form()] = None,
+):
     """Crea un nuevo profesor a partir de los datos del formulario.
 
-    Stub: no extrae ni valida datos del request. Simplemente redirige al listado.
+    Valida que se haya seleccionado al menos una materia, un grado y un periodo,
+    y que el nombre no quede vacío tras recortar espacios; si falta algo,
+    re-renderiza el formulario con mensaje de error. Con datos válidos guarda el
+    profesor vía `guardar_maestro` (maestro + asignaciones + inscripciones) y
+    redirige al listado; si la BD falla, re-renderiza el formulario con mensaje
+    de error.
     """
-    return RedirectResponse(url="/gestionProfesores", status_code=status.HTTP_303_SEE_OTHER)
+    if not materias or not grados or periodo is None:
+        return await _form_nuevo_profesor(
+            request, conn, error="Selecciona al menos una materia, un grado y un periodo."
+        )
+    nombre = nombre.strip()
+    if not nombre:
+        return await _form_nuevo_profesor(
+            request, conn, error="El nombre no puede estar vacío."
+        )
+    try:
+        await guardar_maestro(conn, nombre, materias, grados, periodo)
+        return RedirectResponse(url="/gestionProfesores", status_code=status.HTTP_303_SEE_OTHER)
+    except Exception as e:
+        logger.error(f"Error guardando profesor '{nombre}': {type(e).__name__}: {e}")
+        return await _form_nuevo_profesor(
+            request, conn, error="No se pudo guardar el profesor. Verifica los datos e intenta de nuevo."
+        )
+
+@router.get("/gestionProfesores/cancelar", response_class=HTMLResponse)
+async def cancelar_edicion_profesor(request: Request):
+    """Cancela la edición de un profesor y redirige a la lista principal.
+
+    Usado por HTMX para cancelar la edición inline y volver al listado.
+    Debe declararse ANTES de GET /gestionProfesores/{id} para que {id: int}
+    no capture "cancelar" y devuelva 422.
+    """
+    return Response(status_code=303, headers={"HX-Redirect": "/gestionProfesores"})
 
 @router.get("/gestionProfesores/{id}", response_class=HTMLResponse)
 async def ver_profesor(request: Request, id: int):
@@ -429,21 +539,29 @@ async def ver_profesor(request: Request, id: int):
     return templates.TemplateResponse(request=request, name="gestionProfesoresInformacion.html", context={})
 
 @router.get("/gestionProfesores/{id}/editar", response_class=HTMLResponse)
-async def editar_profesor_form(request: Request, id: int):
-    """Muestra el formulario de edición de un profesor por ID.
+async def editar_profesor_form(request: Request, conn: ConnectionDep, id: int):
+    """Muestra el formulario de edición inline (htmx) de un profesor por ID.
 
-    Stub: renderiza `gestionProfesoresForm.html` con título y acción predefinidos,
-    pero no carga los datos reales del profesor.
+    Carga los datos reales del profesor desde la BD y renderiza el parcial
+    `gestionProfesoresForm_editar.html` (una <tr> editable que reemplaza la
+    fila de la tabla vía hx-swap="outerHTML"). Si el ID no existe, responde
+    con HX-Redirect al listado para no dejar una fila rota.
     """
-    return templates.TemplateResponse(request=request, name="gestionProfesoresForm.html", context={"titulo": "Editar Profesor", "accion": f"/gestionProfesores/{id}/editar"})
+    profesor = await detalle_por_profesor(conn, id)
+    if profesor is None:
+        return Response(status_code=200, headers={"HX-Redirect": "/gestionProfesores"})
+    return templates.TemplateResponse(request=request, name="gestionProfesoresForm_editar.html", context={"profesor": profesor})
 
-@router.post("/gestionProfesores/{id}/editar")
-async def actualizar_profesor(request: Request, id: int):
-    """Actualiza los datos de un profesor existente.
+@router.put("/gestionProfesores/{id}/guardar")
+async def guardar_profesor(request: Request, conn: ConnectionDep, datos: Annotated[GuardarProfesor, Form()], id: int):
+    """Actualiza el nombre de un profesor existente (edición inline htmx).
 
-    Stub: no extrae ni procesa datos del request. Simplemente redirige al listado.
+    Recibe los datos validados por el schema GuardarProfesor, actualiza el
+    nombre en la BD y responde con HX-Redirect al listado (patrón de
+    actualizar_estudiante).
     """
-    return RedirectResponse(url="/gestionProfesores", status_code=status.HTTP_303_SEE_OTHER)
+    await actualizar_profesor(conn, id, datos.nombre)
+    return Response(status_code=303, headers={"HX-Redirect": "/gestionProfesores"})
 
 @router.get("/gestionProfesores/{id}/editar-grado", response_class=HTMLResponse)
 async def editar_grado_profesor_form(request: Request, id: int):
@@ -478,15 +596,7 @@ async def eliminar_profesor(request: Request, id: int):
 # Nota: Existe una segunda función `read_gestion_grados()` en la línea 261 con
 # lógica real (estadísticas + ConnectionDep); esta es una versión duplicada sin contexto.
 
-@router.get("/gestionGrados", response_class=HTMLResponse)
-async def read_gestion_grados(request: Request):
-    """Muestra la página de gestión de grados (versión stub sin datos).
 
-    Nota: Esta función es un duplicado sin lógica real. Existe otra con el mismo
-    nombre en la línea 261 que sí carga estadísticas y recibe ConnectionDep.
-    Renderiza `gestionGrados.html` con contexto vacío.
-    """
-    return templates.TemplateResponse(request=request, name="gestionGrados.html", context={})
 
 @router.get("/gestionGrados/nuevo", response_class=HTMLResponse)
 async def nuevo_grado_form(request: Request):
@@ -521,12 +631,16 @@ async def actualizar_grado(request: Request, id: int):
     """
     return RedirectResponse(url="/gestionGrados", status_code=status.HTTP_303_SEE_OTHER)
 
-@router.post("/gestionGrados/{id}/eliminar")
-async def eliminar_grado(request: Request, id: int):
-    """Elimina un grado por ID.
+@router.delete("/gestionGrados/{id}/eliminar")
+async def eliminar_grado(request: Request, id: int, conn: ConnectionDep):
+    """Elimina un grado por ID, solo si no tiene estudiantes ni asignaciones.
 
-    Stub: no realiza ninguna operación real. Simplemente redirige al listado.
+    Si el grado tiene estudiantes o asignaciones asociadas, NO se elimina
+    y simplemente se redirige al listado (el grado sigue apareciendo).
     """
+    eliminado = await eliminar_grado_bd(conn, id)
+    if eliminado:
+        return Response(status_code=200, headers={"HX-Redirect": "/gestionGrados"})
     return RedirectResponse(url="/gestionGrados", status_code=status.HTTP_303_SEE_OTHER)
 
 

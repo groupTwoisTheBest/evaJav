@@ -651,3 +651,33 @@ textarea.input { scrollbar-color: var(--line-2) transparent; }
 .badge.vivo {
     animation: pulso 2s ease-in-out infinite;
 }
+
+/* Chips de selección (formulario nuevo profesor) */
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-bottom: 1rem;
+}
+
+.chip {
+    font: inherit;
+    padding: .45rem .85rem;
+    background: var(--panel-2);
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius);
+    color: var(--muted);
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+
+.chip:hover {
+    color: var(--text);
+    border-color: var(--accent);
+}
+
+.chip.selected {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+}

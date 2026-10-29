@@ -36,7 +36,7 @@
                     <td>
                         <div class="row-actions">
                             <button hx-get="/gestionProfesores/{{ teacher.id }}/editar" hx-target="closest tr" hx-swap="outerHTML" class="btn sm ghost">Editar</button>
-                            <button class="btn sm danger">Eliminar</button>
+                            <button hx-delete="/gestionProfesores/{{ teacher.id }}/eliminar" hx-target="closest tr" hx-swap="delete" class="btn sm danger">Eliminar</button>
                         </div>
                     </td>
                 </tr>

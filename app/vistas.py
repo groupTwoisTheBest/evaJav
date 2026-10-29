@@ -46,9 +46,12 @@ from app.esquemas import (
     LoginSchema, CalificacionSchema, SeleccionProfesorSchema,
 )
 from app.seguridad import create_token
+from app.dependencias import proteger_get
 from fastapi.responses import Response
 
-router = APIRouter()
+router = APIRouter(
+    dependencies=[Depends(proteger_get)],
+)
 templates = Jinja2Templates(directory="templates")
 
 
@@ -92,7 +95,7 @@ async def login(
     
     1. Busca las credenciales en la BD usando `autenticar_estudiante()` de repositorio.py.
     2. Si son válidas, firma un JWT con el email del estudiante y lo almacena en una cookie
-       HTTP-only (samesite=lax, secure=True) para mantener la sesión.
+    HTTP-only (samesite=lax, secure=True) para mantener la sesión.
     3. Redirige a la página de selección de profesor.
     
     Si hay error de BD o credenciales inválidas, redirige de vuelta al formulario con error=1.
@@ -260,11 +263,6 @@ async def read_administrador(request: Request, email: CurrentUserDep, conn: Conn
     3. Renderiza el dashboard con esas métricas.
     """
     contexto = await estadisticas_admin(conn)
-    if not email:
-        return RedirectResponse(
-            url="/administrador/iniciar-sesion",
-            status_code=status.HTTP_303_SEE_OTHER
-        )
     return templates.TemplateResponse(
         request=request, name="administradorMain.html", context=contexto
     )
@@ -581,16 +579,14 @@ async def actualizar_grado_profesor(request: Request, id: int):
     """
     return RedirectResponse(url=f"/gestionProfesores/{id}", status_code=status.HTTP_303_SEE_OTHER)
 
-@router.post("/gestionProfesores/{id}/eliminar")
-async def eliminar_profesor(request: Request, id: int):
+@router.delete("/gestionProfesores/{id}/eliminar")
+async def eliminar_profesor(request: Request, id: int,conn: ConnectionDep):
     """Elimina un profesor por ID.
-
-    Stub: no realiza ninguna operación real. Simplemente redirige al listado.
     """
-    return RedirectResponse(url="/gestionProfesores", status_code=status.HTTP_303_SEE_OTHER)
-
-
-# ============ GESTIÓN DE GRADOS ============
+    eliminado = await eliminar_profesor(conn,id)
+    if eliminado:
+        return Response(status_code=303, headers={"HX-Redirect": "/gestionProfesores"})
+    return  RedirectResponse(url="/gestionProfesores", status_code=status.HTTP_303_SEE_OTHER)
 # CRUD para administrar los grados académicos (ej: "1° A", "2° B", etc.).
 # Todos estos endpoints son stubs: no acceden a la BD ni procesan datos.
 # Nota: Existe una segunda función `read_gestion_grados()` en la línea 261 con

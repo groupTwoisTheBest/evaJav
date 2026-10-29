@@ -660,6 +660,13 @@ async def eliminar_grado(conn, id_grado: int) -> bool:
     )
     return result == "DELETE 1"
 
+async def eliminar_profesor(conn, id_profesor: int) -> bool:
+    result = await conn.execute(
+        "DELETE FROM maestros WHERE id = $1",
+        id_profesor,
+    )
+    return result == "DELETE 1"
+
 
 # ── Listado de grados (panel admin) ─────────────────────────────────────────
 # Devuelve TODOS los grados existentes con su conteo real de estudiantes y
@@ -681,13 +688,6 @@ async def listar_grados(conn) -> list[dict]:
     """)
     return [dict(row) for row in rows] if rows else []
 
-async def eliminar_grado(conn, id_grado: int) -> bool:
-    result = await conn.execute(
-        """
-        DELETE FROM grados
-        WHERE id_grado = $1;
-        """,id_grado)
-    return result == "DELETE 1"
 
 
 # ── Catálogos para nuevo profesor ─────────────────────────────────────────────

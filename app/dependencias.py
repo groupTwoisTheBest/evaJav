@@ -48,3 +48,29 @@ CurrentUserDep = Annotated[str, Depends(get_current_user)]
 Se usa como argumento de los endpoints que requieren autenticación.
 Devuelve un string (email) o lanza HTTPException si no hay token válido.
 """
+
+
+# Rutas públicas que NO deben ser protegidas por proteger_get.
+RUTAS_PUBLICAS = frozenset({
+    "/",
+    "/inicio-sesion",
+    "/registrarse",
+    "/administrador/iniciar-sesion",
+})
+
+
+async def proteger_get(request: Request) -> None:
+    """Dependencia que protege todas las rutas GET.
+
+    Verifica que el usuario esté autenticado (cookie JWT válida).
+    Las rutas en `RUTAS_PUBLICAS` son excluidas.
+    Si no está autenticado, lanza HTTPException 303 hacia `/`.
+
+    Esta dependencia se inyecta a nivel de `APIRouter` para cubrir
+    automáticamente todas las rutas GET registradas en ella.
+    """
+    path = request.url.path
+    if path in RUTAS_PUBLICAS:
+        return None
+    await get_current_user(request)
+    return None

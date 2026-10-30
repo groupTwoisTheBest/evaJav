@@ -664,10 +664,19 @@ async def eliminar_grado(conn, id_grado: int) -> bool:
     return result == "DELETE 1"
 
 async def eliminar_profesor(conn, id_profesor: int) -> bool:
-    result = await conn.execute(
-        "DELETE FROM maestros WHERE id = $1",
-        id_profesor,
-    )
+    async with conn.transaction():
+        result = await conn.execute(
+            "DELETE FROM evaluaciones WHERE id_asignacion IN (SELECT id FROM asignaciones WHERE id_profesor = $1)",
+            id_profesor,
+        )
+        await conn.execute(
+            "DELETE FROM inscripciones WHERE id_asignacion IN (SELECT id FROM asignaciones WHERE id_profesor = $1)",
+            id_profesor
+        )
+        await conn.execute(
+            "DELETE FROM maestros WHERE id = $1",
+            id_profesor
+        )
     return result == "DELETE 1"
 
 

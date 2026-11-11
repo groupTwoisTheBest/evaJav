@@ -2,7 +2,27 @@
 {% block title %}Nuevo Grado{% endblock %}
 
 {% block content %}
+<div class="wrap narrow">
 
+    <div class="card">
+        <h2 class="center">Nuevo Grado</h2>
 
+        <form action="/gestionGrados/nuevo" method="POST">
+            <label for="nombre">Nombre del grado</label>
+            <input class="input" type="text" id="nombre" name="nombre"
+                   value="{{ nombre or '' }}" maxlength="2" inputmode="numeric"
+                   pattern="[0-9]{1,2}" placeholder="Ej: 6" required autofocus>
+            <p class="small muted">Escribe solo el número. Se mostrará como «6°».</p>
 
+            <button class="btn" type="submit">Guardar registro</button>
+
+            {% if error %}
+            <p class="alert error">{{ error }}</p>
+            {% endif %}
+        </form>
+
+        <p class="muted small center mt mb-0"><a href="/gestionGrados">Volver</a></p>
+    </div>
+
+</div>
 {% endblock %}

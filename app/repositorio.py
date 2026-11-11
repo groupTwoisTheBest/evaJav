@@ -591,7 +591,7 @@ ORDER BY
     result = []
     for row in rows:
         promedio = float(row["promedio_eval"])
-        estado = "Activo" if promedio >= 4.0 else "Alerta"
+        estado = "Activo" if promedio >= 3.5 else "Alerta"
         result.append({
             "id": row["id"],
             "nombre": row["nombre"],
@@ -666,17 +666,9 @@ async def eliminar_grado(conn, id_grado: int) -> bool:
 async def eliminar_profesor(conn, id_profesor: int) -> bool:
     async with conn.transaction():
         result = await conn.execute(
-            "DELETE FROM evaluaciones WHERE id_asignacion IN (SELECT id FROM asignaciones WHERE id_profesor = $1)",
-            id_profesor,
-        )
-        await conn.execute(
-            "DELETE FROM inscripciones WHERE id_asignacion IN (SELECT id FROM asignaciones WHERE id_profesor = $1)",
-            id_profesor
-        )
-        await conn.execute(
             "DELETE FROM maestros WHERE id = $1",
-            id_profesor
-        )
+            id_profesor)
+
     return result == "DELETE 1"
 
 
@@ -699,6 +691,23 @@ async def listar_grados(conn) -> list[dict]:
         ORDER BY g.id_grado;
     """)
     return [dict(row) for row in rows] if rows else []
+
+
+# ── Alta de grado (panel admin) ──────────────────────────────────────────────
+# Inserta un nuevo grado en el catálogo. `nombre_grado` es UNIQUE, así que
+# ON CONFLICT DO NOTHING evita el UniqueViolationError y permite distinguir
+# el duplicado por el retorno: id_grado si se insertó, None si ya existía.
+
+async def crear_grado(conn, nombre: str) -> int | None:
+    return await conn.fetchval(
+        """
+        INSERT INTO grados (nombre_grado)
+        VALUES ($1)
+        ON CONFLICT (nombre_grado) DO NOTHING
+        RETURNING id_grado
+        """,
+        nombre.strip(),
+    )
 
 
 
@@ -808,6 +817,13 @@ async def detalle_por_profesor(conn, id_profesor: int) -> dict | None:
         """, id_profesor)
     if row is None:
         return None
+    grados_rows = await conn.fetch("""
+        SELECT DISTINCT g.id_grado, g.nombre_grado
+        FROM asignaciones a
+        JOIN grados g ON g.id_grado = a.id_grado
+        WHERE a.id_profesor = $1
+        ORDER BY g.nombre_grado
+    """, id_profesor)
     promedio = float(row["promedio_eval"])
     return {
         "id": row["id"],
@@ -815,6 +831,7 @@ async def detalle_por_profesor(conn, id_profesor: int) -> dict | None:
         "grados_asignados": row["grados_asignados"] or "Sin asignar",
         "promedio_eval": promedio,
         "estado": "Activo" if promedio >= 4.0 else "Alerta",
+        "grados": [dict(g) for g in grados_rows],
     }
 
 
@@ -833,3 +850,60 @@ async def actualizar_profesor(conn, id_profesor: int, nombre: str) -> dict | Non
         id_profesor, nombre
     )
     return dict(row) if row else None
+
+async def actualizar_grados_profesor(conn, id_profesor: int, grados_nuevos: list[int]) -> None:
+    """Sincroniza los grados asignados a un profesor (alta y baja)."""
+    async with conn.transaction():
+
+        # ── (a) Guardar ANTES las materias/periodo del profesor ──
+        # Se consulta antes de borrar, porque si borramos primero
+        # ya no quedaría ninguna fila de la que leer esta info.
+        base = await conn.fetch("""
+            SELECT DISTINCT id_materia, id_periodo
+            FROM asignaciones
+            WHERE id_profesor = $1
+        """, id_profesor)
+
+        # Caso raro: profesor sin asignaciones todavía → usar periodo abierto
+        # (mismo patrón que repositorio.py:67-71)
+        if not base:
+            id_periodo = await conn.fetchval("""
+                SELECT id FROM periodos
+                WHERE estado = 'abierto'
+                ORDER BY id DESC LIMIT 1
+            """)
+            materias = await conn.fetch("SELECT id FROM materias")
+            base = [(m["id"], id_periodo) for m in materias]
+
+        # ── (b) QUITAR los grados desmarcados ──
+        # Con ON DELETE CASCADE esto también borra sus inscripciones
+        # y evaluaciones. Si grados_nuevos está vacío, borra todos.
+        await conn.execute("""
+            DELETE FROM asignaciones
+            WHERE id_profesor = $1
+            AND NOT (id_grado = ANY($2))
+        """, id_profesor, grados_nuevos)
+
+        # ── (c) AÑADIR los grados marcados que falten ──
+        # ON CONFLICT evita duplicados por el UNIQUE de schema.sql:149
+        for id_materia, id_periodo in base:
+            for id_grado in grados_nuevos:
+                await conn.execute("""
+                    INSERT INTO asignaciones (id_profesor, id_materia, id_periodo, id_grado)
+                    VALUES ($1, $2, $3, $4)
+                    ON CONFLICT DO NOTHING
+                """, id_profesor, id_materia, id_periodo, id_grado)
+
+                # Matricular a los estudiantes del grado, igual que
+                # guardar_maestro (repositorio.py:750-757)
+                await conn.execute("""
+                    INSERT INTO inscripciones (id_estudiante, id_asignacion)
+                    SELECT e.id, a.id
+                    FROM estudiantes e
+                    JOIN asignaciones a ON a.id_grado = e.id_grado
+                    WHERE a.id_profesor = $1
+                      AND a.id_grado   = $2
+                      AND a.id_materia = $3
+                      AND a.id_periodo = $4
+                    ON CONFLICT DO NOTHING
+                """, id_profesor, id_grado, id_materia, id_periodo)

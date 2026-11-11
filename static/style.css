@@ -109,6 +109,26 @@ code, .mono { font-family: var(--mono); font-size: 0.88em; }
   border-top: 1px solid var(--line);
 }
 
+/* Contenedor de dos columnas: tarjeta de acceso + panel lateral de investigación.
+   En pantallas angostas el panel pasa a una sola columna y queda debajo. */
+.layout-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 320px);
+  gap: 1.5rem;
+  align-items: start;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+  flex: 1;
+}
+
+/* En escritorio el panel acompaña al contenido mientras se hace scroll */
+.panel-investigacion {
+  position: sticky;
+  top: 76px;
+}
+
 .head { margin-bottom: 1.6rem; }
 .head-row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; }
 
@@ -297,6 +317,12 @@ td.num, th.num { font-family: var(--mono); text-align: right; }
 
 /* El contenido va por encima del lienzo */
 .nav, .subnav, .wrap, .foot { position: relative; z-index: 1; }
+
+@media (max-width: 760px) {
+  /* Una sola columna: el panel lateral queda debajo del contenido */
+  .layout-panel { grid-template-columns: 1fr; gap: 1rem; }
+  .panel-investigacion { position: static; }
+}
 
 @media (max-width: 560px) {
   .nav { justify-content: center; text-align: center; }

@@ -713,3 +713,11 @@ async def read_agradecimiento(request: Request, conn: ConnectionDep, email: Curr
         name="certificado.html",
         context={"nombre": nombre["nombre"] if nombre else ""}
     )
+
+@router.get("/investigacionAmbiental", response_class=HTMLResponse)
+async def read_investigacion_ambiental(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="InvestigacionBiologia.html",
+        context={}
+    )

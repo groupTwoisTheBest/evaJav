@@ -433,14 +433,7 @@ async def crear_estudiante_get(request: Request):
     """Muestra el formulario vacío para registrar un nuevo estudiante."""
     return templates.TemplateResponse(request=request, name="gestionEstudiantesNuevo.html", context={})
 
-@router.post("/gestionEstudiantes/{id}/nuevo")
-async def crear_estudiante(request: Request):
-    """Procesa la creación de un nuevo estudiante a través del formulario.
 
-    Stub: recibe los datos del formulario y redirige al listado de estudiantes.
-    La lógica real de insercción debe implementarse aquí.
-    """
-    return RedirectResponse(url="/gestionEstudiantes", status_code=status.HTTP_303_SEE_OTHER)
 
 @router.get("/gestionEstudiantes/{id}", response_class=HTMLResponse)
 async def ver_estudiante(request: Request, id: int):
@@ -489,8 +482,6 @@ async def eliminar_estudiante_ruta(request: Request, id_estudiante: int, conn: C
 
 # ============ GESTIÓN DE PROFESORES ============
 # CRUD para administrar el listado de profesores registrados.
-# Todos estos endpoints son stubs (sin lógica real): solo renderizan templates
-# con datos genéricos o redirigen. No acceden a la base de datos ni validan datos.
 
 @router.post("/gestionProfesores/nuevo")
 async def crear_profesor(
@@ -602,14 +593,7 @@ async def guardar_profesor(request: Request, conn: ConnectionDep, datos: Annotat
     await actualizar_grados_profesor(conn, id, datos.grados)
     return Response(status_code=303, headers={"HX-Redirect": "/gestionProfesores"})
 
-@router.get("/gestionProfesores/{id}/editar-grado", response_class=HTMLResponse)
-async def editar_grado_profesor_form(request: Request, id: int):
-    """Muestra el formulario para cambiar el grado de un profesor.
 
-    Stub: renderiza `gestionProfesoresForm.html` con título específico para cambio
-    de grado, pero sin datos reales.
-    """
-    return templates.TemplateResponse(request=request, name="gestionProfesoresForm.html", context={"titulo": "Cambiar Grado del Profesor", "accion": f"/gestionProfesores/{id}/editar-grado"})
 
 
 @router.delete("/gestionProfesores/{id}/eliminar")
@@ -667,21 +651,8 @@ async def crear_grado(
 
     return RedirectResponse(url="/gestionGrados", status_code=status.HTTP_303_SEE_OTHER)
 
-@router.get("/gestionGrados/{id}/editar", response_class=HTMLResponse)
-async def editar_grado_form(request: Request, id: int):
-    """Muestra el formulario de edición de un grado por ID.
 
-    Stub: renderiza `gestionGradosForm.html` con título y acción predefinidos.
-    """
-    return templates.TemplateResponse(request=request, name="gestionGradosForm.html", context={"titulo": "Editar Grado", "accion": f"/gestionGrados/{id}/editar"})
 
-@router.post("/gestionGrados/{id}/editar")
-async def actualizar_grado(request: Request, id: int):
-    """Actualiza los datos de un grado existente.
-
-    Stub: no extrae ni procesa datos del request. Simplemente redirige al listado.
-    """
-    return RedirectResponse(url="/gestionGrados", status_code=status.HTTP_303_SEE_OTHER)
 
 @router.delete("/gestionGrados/{id}/eliminar")
 async def eliminar_grado(request: Request, id: int, conn: ConnectionDep):
